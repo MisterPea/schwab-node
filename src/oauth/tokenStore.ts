@@ -4,7 +4,7 @@ import { dirname } from 'node:path';
 export type TokenSet = {
   access_token: string;
   refresh_token: string;
-  refresh_expiration: number; // now + 7 days
+  refresh_obtained_at: number; 
   token_type: "Bearer";
   expires_in: number;         // seconds 
   id_token?: string;

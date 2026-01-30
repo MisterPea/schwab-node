@@ -10,6 +10,7 @@ export type AuthCodeOutput = {
   session: string;
 };
 
+// Todo: Allow redirects that aren't localhost.
 /**
  * Minimal server to listen to calls to 127.0.0.1
  * @param {string} redirectUri Redirect/callback url
@@ -34,33 +35,64 @@ export async function listenForAuthCode(redirectUri: string, timeoutSec: number 
   return await new Promise<AuthCodeOutput>((resolve, reject) => {
     const server = https.createServer({ cert, key }, app);
 
+    const sockets = new Set<import("node:net").Socket>();
+    server.on("connection", (socket) => {
+      sockets.add(socket);
+      socket.on("close", () => sockets.delete(socket));
+    });
+
+    const shutdown = (err?: Error, result?: AuthCodeOutput) => {
+      clearTimeout(timer);
+
+      // Stop accepting new connections
+      server.close(() => {
+        // Resolve/reject after server has stopped listening
+        if (err) reject(err);
+        else if (result) resolve(result);
+      });
+
+      // Force-close any keep-alive sockets
+      for (const s of sockets) s.destroy();
+      sockets.clear();
+    };
+
     const timer = setTimeout(() => {
       server.close();
-      reject(new Error(`Timed out waiting for OAuth redirect after ${timeoutSec} seconds`));
+      shutdown(new Error(`Timed out waiting for OAuth redirect after ${timeoutSec} seconds`));
     }, timeoutSec * 1000);
 
-    app.get(pathname, (req, res) => {
-      const { code, session } = req.query;
+
+    app.get(/(.*)/, (req, res) => {
+      const reqPath = req.path !== "/" ? req.path.replace(/\/+$/, "") : "/";
+      if (reqPath !== pathname) {
+        res.status(404).send("404 Not Found");
+        return;
+      }
+
+      const { code, session, error, error_description } = req.query as Record<string, unknown>;
+
+      if (typeof error === "string" && error.length) {
+        res.status(400).send("Authorization failed. You can close this tab.");
+        shutdown(new Error(`OAuth error: ${error}${typeof error_description === "string" ? ` (${error_description})` : ""}`));
+        return;
+      }
+
       if (typeof code !== "string" || !code.length) {
         res.status(400).send("Missing ?code=");
         return;
       }
+
       if (typeof session !== "string" || !session.length) {
         res.status(400).send("Missing ?session=");
         return;
       }
 
-      clearTimeout(timer);
+      res
+        .status(200)
+        .set("Content-Type", "text/html; charset=utf-8")
+        .send("<html><body><h3>Authorized.</h3>You can close this tab.</body></html>");
 
-      res.status(200).send("<html><body><h3>Authorized.</h3>You can close this tab.</body></html>");
-
-      server.close(() => resolve({ code, session }));
-    });
-
-    // Fallthrough for unexpected routes
-    app.get(/(.*)/, (req, res) => {
-      // Set the response status to 404 Not Found
-      res.status(404).send('404 Not Found - The requested page does not exist.');
+      shutdown(undefined, { code, session });
     });
 
     server.listen({ host: hostname, port: port }, () => {

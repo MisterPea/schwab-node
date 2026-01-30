@@ -14,31 +14,48 @@ export class SchwabAuth {
   private clientId: string;
   private clientSecret: string;
   private redirectUri: string;
-  private fts: FileTokenStore;
-  private refreshSkew: number;
+  private fts: FileTokenStore = new FileTokenStore('.secrets/token');;
+  private refreshSkew: number = 2 * 60_000;
+  private authInProgress: Promise<TokenSet> | null = null;
 
   constructor(config: SchwabAuthConfig) {
     this.clientId = config.clientId;
     this.clientSecret = config.clientSecret;
     this.redirectUri = config.redirectUri;
-    this.fts = new FileTokenStore('.secrets/token');
-    this.refreshSkew = 2 * 60_000;
   }
 
-  // Check for valid auth if no valid auth, start 3 leg auth
-  async getAuth(): Promise<TokenSet> {
+  /**
+   * Root auth call - locks while auth is in progress
+   * @returns {Promise<TokenSet>}
+   */
+  getAuth(): Promise<TokenSet> {
+    if (this.authInProgress) return this.authInProgress;
+
+    this.authInProgress = this.getAuthInternal()
+      .finally(() => { this.authInProgress = null; });
+
+    return this.authInProgress;
+  }
+
+  /**
+   * Private method that coordinates the token service
+   * @returns {TokenSet}
+   */
+  private async getAuthInternal(): Promise<TokenSet> {
     let token: TokenSet | null = await this.fts.load();
 
-    // start auth process
-    if (!token || this.refreshWillExpire(token)) {
+    if (!token) {
       const code = await this.requestAuth();
       token = await this.retrieveAuthToken(code);
-      await this.fts.save(token);
-      // if refresh is good but token expired
-    } else if (this.isExpired(token)) {
-      token = await this.refresh(token);
-      await this.fts.save(token);
-    };
+
+    } else if (!this.isExpired(token)) {
+      return token;
+
+    } else {
+      const { refresh_token, refresh_obtained_at } = token;
+      token = await this.refresh(refresh_token, refresh_obtained_at);
+    }
+    await this.fts.save(token);
     return token;
   }
 
@@ -50,13 +67,15 @@ export class SchwabAuth {
     const url = new URL(AUTH_ENDPOINT_BASE);
     url.searchParams.set('response_type', 'code');
     url.searchParams.set('client_id', this.clientId);
-    url.searchParams.set('scope', 'readonly');
     url.searchParams.set('redirect_uri', this.redirectUri);
     const authUrl = url.toString();
 
     await tryOpenBrowser(authUrl);
     const codeSession = await listenForAuthCode(this.redirectUri);
     const { code, session } = codeSession; // keep session for debug
+
+    if (!session) throw new Error('session id must be part of the payload');
+
     return code;
   };
 
@@ -74,17 +93,9 @@ export class SchwabAuth {
    * @returns {boolean}
    */
   private isExpired(tokens: TokenSet): boolean {
+    // token expiration is in seconds
     const expiresAt = tokens.obtained_at + tokens.expires_in * 1000;
     return this.nowMs() >= (expiresAt - this.refreshSkew);
-  }
-
-  /**
-   * Private method to determine if refresh will expire within 12 hours
-   * @param {TokenSet} tokens 
-   * @returns {boolean}
-   */
-  private refreshWillExpire(tokens: TokenSet): boolean {
-    return Date.now() > tokens.refresh_expiration - 43_200_00; // 12 hours
   }
 
   /**
@@ -101,8 +112,13 @@ export class SchwabAuth {
       "Content-Type": "application/x-www-form-urlencoded",
     };
     return header;
-  }
+  };
 
+  /**
+   * Private method to retrieve a token based off oauth code
+   * @param {string} code String retrieve from initial auth
+   * @returns {Promise<TokenSet>}
+   */
   private async retrieveAuthToken(code: string): Promise<TokenSet> {
     const body = new URLSearchParams();
     body.set("grant_type", "authorization_code");
@@ -122,13 +138,16 @@ export class SchwabAuth {
     return {
       ...json,
       obtained_at: this.nowMs(),
-      refresh_expiration: this.nowMs() + 604_800_000 // 7 days
+      refresh_obtained_at: this.nowMs()
     } as TokenSet;
-  }
+  };
 
-  private async refresh(oldToken: TokenSet) {
-    const { refresh_token } = oldToken;
-
+  /**
+   * Private method to refresh an auth
+   * @param {string} refresh_token
+   * @returns {Promise<TokenSet>}
+   */
+  private async refresh(refresh_token: string, refresh_obtained_at: number): Promise<TokenSet> {
     const body = new URLSearchParams();
     body.set("grant_type", "refresh_token");
     body.set("refresh_token", refresh_token);
@@ -140,10 +159,19 @@ export class SchwabAuth {
     });
 
     const text = await resp.text();
-    if (!resp.ok) throw new Error(`Refresh failed (${resp.status}): ${text}`);
+
+    // On fail start auth from scratch
+    if (!resp.ok) {
+      const code = await this.requestAuth();
+      const token = await this.retrieveAuthToken(code);
+      return token;
+    }
 
     const json = JSON.parse(text);
-    return { ...json, obtained_at: this.nowMs() } as TokenSet;
+    return {
+      ...json,
+      obtained_at: this.nowMs(),
+      refresh_obtained_at
+    } as TokenSet;
   }
 }
-

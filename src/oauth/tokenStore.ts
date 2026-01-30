@@ -4,11 +4,12 @@ import { dirname } from 'node:path';
 export type TokenSet = {
   access_token: string;
   refresh_token: string;
+  refresh_expiration: number; // now + 7 days
   token_type: "Bearer";
-  scope?: string;
-  expires_in: number;     // seconds 
+  expires_in: number;         // seconds 
   id_token?: string;
-  obtained_at: number;    // epoch ms
+  obtained_at: number;        // epoch ms
+  scope?: string;
 };
 
 export class FileTokenStore {

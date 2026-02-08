@@ -9,6 +9,18 @@ export function convertIsoStringToMs(isoString: ISODate): number {
 }
 
 /**
+ * Function to return YYYY-MM-DD string d days into the future
+ * @param {number} d Number of days to advance todays date
+ * @returns {string} YYYY-MM-DD
+ */
+export function addDays(d: number): string {
+  var date = new Date();
+  date.setDate(date.getDate() + d);
+  const newDate = date.toISOString().split('T')[0];
+  return newDate;
+}
+
+/**
  * Convenience function to construct marketData url with queries
  * @param {Object} config Key/values pairs to include in the query 
  * @param {string} endpoint Slash delineated link to the endpoint
@@ -20,7 +32,6 @@ export function constructMarketDataUrl(config: GetMarketDataConfig, endpoint: st
   for (const [k, v] of Object.entries(config)) {
     url.searchParams.set(k, `${v}`);
   }
-
   const reqUrl = url.toString();
   return reqUrl;
 }
@@ -30,7 +41,7 @@ export function constructMarketDataUrl(config: GetMarketDataConfig, endpoint: st
  * @param {ReadableStream} stream Stream to convert—usually from request.body
  * @returns {Promise<Object>}
  */
-export async function readableStreamToObject(stream: ReadableStream): Promise<Record<string, any>> {
+export async function readableStreamToObject(stream: ReadableStream): Promise<Record<string, any>[]> {
   const decoder = new TextDecoder();
   let buffer = '';
   const result: Record<string, any>[] = [];

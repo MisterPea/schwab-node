@@ -51,7 +51,7 @@ export type ChartBase = {
 
 // --- discriminated union tying it all together ---
 export type ChartRequest =
-  | (ChartBase & {
+  (ChartBase & {
     periodType: "day";
     period?: DayPeriod; // default 10
     frequencyType?: DayFrequencyType; // default "minute"
@@ -177,7 +177,7 @@ type GetOptionChainRtnHead = {
   callExpDateMap: ExpDateMap<OptionQuote>;
 };
 
-type OptionQuote = {
+export type OptionQuote = {
   putCall: 'CALL' | 'PUT';
   symbol: string;
   description: string;
@@ -230,7 +230,7 @@ type OptionQuote = {
   mini: boolean;
   pennyPilot: boolean;
   nonStandard: boolean;
-}
+};
 
 export interface OptionDeliverable {
   symbol?: string;
@@ -376,5 +376,44 @@ export type QuoteData = {
   reference?: QuoteReference;
   regular?: QuoteRegular;
 };
+
+type Greeks = 'delta' | 'gamma' | 'theta' | 'vega' | 'rho' | 'iv' | 'absDelta';
+
+export type AtmOptionRtn = {
+  put_call: 'PUT' | 'CALL';
+  day_of_week: 'SUN' | 'MON' | 'TUE' | 'WED' | 'THR' | 'FRI' | 'SAT';
+  underlying: string;
+  symbol: string;
+  dte: number;
+  theta: number;
+  strike_price: number;
+  gamma: number;
+  volatility: number;
+  vega: number;
+  delta: number;
+};
+
+export type GreekFilterRtn = {
+  put_call: 'PUT' | 'CALL';
+  underlying: string;
+  symbol: string;
+  dte: number;
+  day_of_expiry: 'SUN' | 'MON' | 'TUE' | 'WED' | 'THR' | 'FRI' | 'SAT';
+  theta: number;
+  strike_price: number;
+  gamma: number;
+  volatility: number;
+  vega: number;
+  delta: number;
+  rho: number;
+};
+
+export type GreekFilterReq = [
+  symbol: string,
+  window: [number, number],
+  greek: Partial<Record<Greeks, [number, number]>>,
+  side?: 'CALL' | 'PUT' | 'BOTH',
+  strikeCount?: number,
+];
 
 export type GetMarketDataConfig = ChartRequest | OptionChainReq | OptionExpirationReq | GetQuoteReq;

@@ -46,7 +46,6 @@ export async function getOptionExpirations(config: OptionExpirationReq): Promise
  */
 export async function getAtmOptionData(config: GetAtmOptionReq): Promise<AtmOptionRtn[]> {
 
-
   const { symbol, window } = config;
 
   // Get expirations
@@ -106,6 +105,8 @@ export async function getAtmOptionData(config: GetAtmOptionReq): Promise<AtmOpti
         gamma,
         theta,
         daysToExpiration: dte,
+        openInterest,
+        totalVolume,
         optionDeliverablesList
       } = expirations[k][closestStrike][0] as OptionQuote;
 
@@ -113,6 +114,8 @@ export async function getAtmOptionData(config: GetAtmOptionReq): Promise<AtmOpti
         put_call,
         day_of_week: weekDays[new Date().getDay()] as AtmOptionRtn['day_of_week'],
         underlying: optionDeliverablesList[0].symbol || '',
+        open_interest: openInterest,
+        total_volume: totalVolume,
         symbol,
         dte,
         theta,
@@ -219,13 +222,15 @@ export async function greekFilter(...args: GreekFilterReq) {
       if (!passesAllGreeks) continue;
 
       const date_of_expiry = addDays(strike.daysToExpiration);
-      const day_of_week = weekDays[new Date(date_of_expiry).getDay() + 1] as AtmOptionRtn['day_of_week'];
+      const day_of_week = weekDays[new Date(date_of_expiry).getDay()] as AtmOptionRtn['day_of_week'];
 
       matchingStrikes.push({
         put_call: strike.putCall,
         underlying: symbol,
         symbol: strike.symbol,
         dte: strike.daysToExpiration,
+        total_volume: strike.totalVolume,
+        open_interest: strike.openInterest,
         day_of_expiry: day_of_week,
         theta: strike.theta,
         strike_price: strike.strikePrice,

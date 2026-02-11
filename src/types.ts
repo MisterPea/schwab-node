@@ -383,6 +383,8 @@ export type AtmOptionRtn = {
   put_call: 'PUT' | 'CALL';
   day_of_week: 'SUN' | 'MON' | 'TUE' | 'WED' | 'THR' | 'FRI' | 'SAT';
   underlying: string;
+  open_interest: number,
+  total_volume: number,
   symbol: string;
   dte: number;
   theta: number;
@@ -398,6 +400,8 @@ export type GreekFilterRtn = {
   underlying: string;
   symbol: string;
   dte: number;
+  total_volume: number;
+  open_interest: number;
   day_of_expiry: 'SUN' | 'MON' | 'TUE' | 'WED' | 'THR' | 'FRI' | 'SAT';
   theta: number;
   strike_price: number;

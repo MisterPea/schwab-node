@@ -9,15 +9,19 @@
   "scripts": {
     "start": "tsx watch src/index.ts",
     "test": "vitest",
+    "lint": "npx eslint .",
     "coverage": "vitest run --coverage",
     "build": "tsc"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.0",
     "@vitest/coverage-v8": "^4.0.15",
+    "eslint": "^9.39.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.55.0",
     "vitest": "^4.0.15"
   },
   "dependencies": {

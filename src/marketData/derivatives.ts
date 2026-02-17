@@ -5,6 +5,31 @@ import { getQuote } from './quotes.js';
 
 const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THR', 'FRI', 'SAT'];
 
+type OptionExpirationResponse = {
+  expirationList: OptionExpirationRtn[];
+};
+
+function isRecord(v: unknown): v is Record<string, unknown> {
+  return !!v && typeof v === 'object';
+}
+
+function isOptionChainRtn(v: unknown): v is GetOptionChainRtn {
+  if (!isRecord(v)) return false;
+  return isRecord(v.callExpDateMap) && isRecord(v.putExpDateMap);
+}
+
+function isOptionExpirationRtn(v: unknown): v is OptionExpirationRtn {
+  if (!isRecord(v)) return false;
+  return (typeof v.expirationDate === 'string' || typeof v.expirationDate === 'number')
+    && typeof v.daysToExpiration === 'number';
+}
+
+function isOptionExpirationResponse(v: unknown): v is OptionExpirationResponse {
+  if (!isRecord(v)) return false;
+  if (!Array.isArray(v.expirationList)) return false;
+  return v.expirationList.every(isOptionExpirationRtn);
+}
+
 /**
  * Option chain request 
  * @param {OptionChainReq} config 
@@ -17,8 +42,9 @@ export async function getOptionChain(config: OptionChainReq): Promise<GetOptionC
 
   if (!res.body) throw new Error("No response body stream available");
 
-  const optionOut = await readableStreamToObject(res.body);
-  return optionOut as GetOptionChainRtn[];
+  const optionOut = await readableStreamToObject<GetOptionChainRtn>(res.body, isOptionChainRtn);
+  if (!optionOut.length) throw new Error(`No options chain data returned for symbol: ${config.symbol}`);
+  return optionOut;
 }
 
 /**
@@ -33,7 +59,8 @@ export async function getOptionExpirations(config: OptionExpirationReq): Promise
 
   if (!res.body) throw new Error("No response body stream available");
 
-  const optionOut = await readableStreamToObject(res.body);
+  const optionOut = await readableStreamToObject<OptionExpirationResponse>(res.body, isOptionExpirationResponse);
+  if (!optionOut.length) throw new Error(`No option expiration data returned for symbol: ${config.symbol}`);
   return optionOut[0].expirationList;
 }
 
@@ -64,7 +91,7 @@ export async function getAtmOptionData(config: GetAtmOptionReq): Promise<AtmOpti
   // Calculating the mid between bid/ask
   const bid = rtn[0][symbol].quote?.bidPrice;
   const ask = rtn[0][symbol].quote?.askPrice;
-  if (!bid || !ask) return [];
+  if (bid == null || ask == null) return [];
   const price = (bid + ask) / 2;
 
   // Get range of option expirations
@@ -109,6 +136,8 @@ export async function getAtmOptionData(config: GetAtmOptionReq): Promise<AtmOpti
         totalVolume,
         optionDeliverablesList
       } = expirations[k][closestStrike][0] as OptionQuote;
+
+      const underlying = optionDeliverablesList?.[0]?.symbol ?? '';
 
       atmOptionInfo.push({
         put_call,
@@ -156,7 +185,7 @@ export async function greekFilter(...args: GreekFilterReq) {
   };
 
   const optionChain = await getOptionChain(optionConfig);
-  if (!optionChain && !optionChain[0]) throw new Error(`No Options for ${symbol} found`);
+  if (!optionChain || !optionChain[0]) throw new Error(`No Options for ${symbol} found`);
 
   const { callExpDateMap, putExpDateMap } = optionChain[0];
 
@@ -253,7 +282,7 @@ function _binarySearch(target: number, searchArray: string[]) {
   let r = searchArray.length - 1;
 
   while (l < r) {
-    let mid = Math.floor((l + r) / 2);
+    const mid = Math.floor((l + r) / 2);
 
     if (+searchArray[mid] === target) {
       return searchArray[mid];
@@ -272,4 +301,3 @@ function _binarySearch(target: number, searchArray: string[]) {
     return searchArray[l - 1];
   }
 }
-

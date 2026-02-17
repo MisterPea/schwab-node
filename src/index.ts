@@ -1,7 +1,8 @@
-import { SchwabOAuth, tryOpenBrowser } from "./oauth/schwabOAuth.js";
 import process from "node:process";
-import { listenForAuthCode } from "./oauth/server.js";
 import { SchwabAuth } from "./oauth/schwabAuth.js";
+import { getPriceHistory, getQuote } from "./marketData/quotes.js";
+import { ChartRequest, OptionChainReq } from "./types.js";
+import { getAtmOptionData, getOptionChain, getOptionExpirations, greekFilter } from "./marketData/derivatives.js";
 
 process.loadEnvFile('.env');
 
@@ -11,30 +12,54 @@ function reqEnv(name: string) {
   return v;
 }
 
+/**
+ * Centrally located accessor to auth logic
+ */
+export const auth = new SchwabAuth({
+  clientId: reqEnv("SCHWAB_CLIENT_ID"),
+  clientSecret: reqEnv("SCHWAB_CLIENT_SECRET"),
+  redirectUri: reqEnv("SCHWAB_REDIRECT_URI")
+});
+
 async function main() {
 
-  // const x = await listenForAuthCode('https://127.0.0.1:8443');
-  // console.log("***",x);
-  const auth = new SchwabAuth({
-    clientId: reqEnv("SCHWAB_CLIENT_ID"),
-    clientSecret: reqEnv("SCHWAB_CLIENT_SECRET"),
-    redirectUri: reqEnv("SCHWAB_REDIRECT_URI")
-  });
+  // // const token = await auth.getAuth();
+  // const config: ChartRequest = {
+  //   symbol: 'AAPL',
+  //   periodType: 'day',
+  //   period: 5,
+  //   frequencyType: 'minute',
+  //   frequency: 5,
+  //   startDate:'2020-10-01'
+  // };
+  // getPriceHistory(config);
 
-  const token = await auth.getAuth();
-  console.log(token);
-  // const oauth = new SchwabOAuth({
-  //   clientId: reqEnv("SCHWAB_CLIENT_ID"),
-  //   clientSecret: reqEnv("SCHWAB_CLIENT_SECRET"),
-  //   redirectUri: reqEnv("SCHWAB_REDIRECT_URI"),
-  //   tokenFile: "./.secrets/schwab-tokens.json",
-  //   httpsCertPath: "./.secrets/certs/localhost.pem",
-  //   httpsKeyPath: "./.secrets/certs/localhost-key.pem",
-  //   openBrowser: true,
-  // });
 
-  // const accessToken = await oauth.getValidAccessToken();
-  // console.log("Got access token:", accessToken.slice(0, 10) + "…");
+  // const optionConfig: OptionChainReq = {
+  //   symbol: 'AMZN',
+
+  //   fromDate: '2026-02-09',
+  //   toDate: '2026-02-20',
+
+  //   strikeCount: 3,
+  // };
+
+  // const gf = await greekFilter('AAPL', [1, 19], { absDelta: [0.38, 0.52], }, 'BOTH');
+  // console.log(gf);
+  // const opChain = await getOptionChain(optionConfig);
+  // console.log(opChain[0].callExpDateMap);
+  // getQuote({ symbols: 'Q' });
+  // const op = await getOptionExpirations({ symbol: 'AMZN' });
+  // console.log(op)
+  const config: ChartRequest = {
+    symbol: 'AAPL',
+    periodType: 'year'
+  };
+  const p = await getPriceHistory(config);
+  console.log(JSON.stringify(p, undefined, 1));
+
+  // const a = await getAtmOptionData({ symbol: 'AAPL', window: [7, 12] });
+  // console.log(a)
 }
 
 main().catch((e) => {
@@ -42,14 +67,3 @@ main().catch((e) => {
   process.exit(1);
 });
 
-
-
-// Authorization URL: https://api.schwabapi.com/v1/oauth/authorize?response_type=code&client_id=fnB6k1X6JSFlQHravRt6T9m86AZlkD04&scope=readonly&redirect_uri=https://developer.schwab.com/oauth2-redirect.html
-// Token URL: https://api.schwabapi.com/v1/oauth/token
-// Flow: authorizationCode
-
-
-// {
-//   code: 'C0.b2F1dGgyLmNkYy5zY2h3YWIuY29t.3px6Mr2Poj7SB3bjC9FMPNZ4NNjVG-mwzJQgCZ2NTEo@',
-//   session: '71366297-1af7-4f10-9832-7972dcb07fbb'
-// }

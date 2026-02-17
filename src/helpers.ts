@@ -14,7 +14,7 @@ export function convertIsoStringToMs(isoString: ISODate): number {
  * @returns {string} YYYY-MM-DD
  */
 export function addDays(d: number): string {
-  var date = new Date();
+  const date = new Date();
   date.setDate(date.getDate() + d);
   const newDate = date.toISOString().split('T')[0];
   return newDate;
@@ -37,14 +37,18 @@ export function constructMarketDataUrl(config: GetMarketDataConfig, endpoint: st
 }
 
 /**
- * Convert's a ReadableStream to an Object
+ * Convert's a ReadableStream to JSON objects and optionally validate each parsed object.
  * @param {ReadableStream} stream Stream to convert—usually from request.body
- * @returns {Promise<Object>}
+ * @param {(obj: unknown) => obj is T} validate Optional runtime validator for each parsed object
+ * @returns {Promise<T[]>}
  */
-export async function readableStreamToObject(stream: ReadableStream): Promise<Record<string, any>[]> {
+export async function readableStreamToObject<T = Record<string, unknown>>(
+  stream: ReadableStream,
+  validate?: (obj: unknown) => obj is T
+): Promise<T[]> {
   const decoder = new TextDecoder();
   let buffer = '';
-  const result: Record<string, any>[] = [];
+  const result: T[] = [];
 
   for await (const chunk of stream) {
     buffer += decoder.decode(chunk, { stream: true });
@@ -61,9 +65,11 @@ export async function readableStreamToObject(stream: ReadableStream): Promise<Re
       if (braceCount === 0 && buffer[i] === '}') {
         const jsonStr = buffer.substring(startIdx, i + 1);
         try {
-          const obj = JSON.parse(jsonStr);
-          result.push(obj); // Collect each complete object
-        } catch (e) {
+          const obj = JSON.parse(jsonStr) as unknown;
+          if (!validate || validate(obj)) {
+            result.push(obj as T); // Collect each complete object
+          }
+        } catch {
           // Not valid JSON, skip
         }
         startIdx = i + 1;

@@ -76,6 +76,21 @@ export type ChartRequest =
     frequency?: FrequencyFor<YtdFrequencyType>; // default 1
   });
 
+interface PriceHistoryCandle {
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  datetime: number;
+}
+
+export interface PriceHistoryRtnElement {
+  symbol: string;
+  empty: boolean;
+  candles: PriceHistoryCandle[];
+}
+
 
 // OPTIONS **************************************************************************************
 type OptionStrategy = 'SINGLE' | 'ANALYTICAL' | 'COVERED' | 'VERTICAL' | 'CALENDAR' | 'STRANGLE' | 'STRADDLE' | 'BUTTERFLY' | 'CONDOR' | 'DIAGONAL' | 'COLLAR' | 'ROLL';
@@ -160,7 +175,7 @@ export type GetOptionChainRtn = Omit<GetOptionChainRtnHead, 'callExpDateMap'> &
 type GetOptionChainRtnHead = {
   symbol: string;
   status: string;
-  underlying: any;
+  underlying: string;
   strategy: OptionStrategy;
   interval: number;
   isDelayed: boolean;

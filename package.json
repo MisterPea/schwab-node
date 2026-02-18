@@ -1,9 +1,25 @@
 {
   "name": "schwab-node",
   "version": "0.1.0",
-  "description": "Minimal TypeScript/Node.js template",
   "license": "MIT",
-  "author": "Perry Angelora",
+  "author": "Perry Angelora <perry.angelora@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MisterPea/schwab-node"
+  },
+  "description": "A Node.js wrapper for Schwab's Market Data API — get quotes, option chains, price history, and more with minimal setup",
+  "keywords": [
+    "schwab",
+    "schwab-api",
+    "charles-schwab",
+    "trading-api",
+    "brokerage-api",
+    "finance-api",
+    "oauth2",
+    "authentication",
+    "nodejs",
+    "typescript"
+  ],
   "engines": {
     "node": ">=20.6.0"
   },

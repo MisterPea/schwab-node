@@ -1,7 +1,16 @@
-import { auth } from '../index.js';
+import { getDefaultAuth } from '../oauth/defaultAuth.js';
 
-export async function getRequest(url: string) {
-  const { access_token, token_type } = await auth.getAuth();
+type AuthToken = {
+  access_token: string;
+  token_type: string;
+};
+
+type AuthProvider = {
+  getAuth(): Promise<AuthToken>;
+};
+
+async function performRequest(url: string, authProvider: AuthProvider): Promise<Response> {
+  const { access_token, token_type } = await authProvider.getAuth();
 
   const reqHeaders = new Headers();
   reqHeaders.append('accept', 'application/json');
@@ -17,4 +26,14 @@ export async function getRequest(url: string) {
     throw new Error(`HTTP ${res.status}: ${msg}`);
   }
   return res;
+}
+
+export function createGetRequest(authProvider: AuthProvider) {
+  return async function getRequest(url: string): Promise<Response> {
+    return performRequest(url, authProvider);
+  };
+}
+
+export async function getRequest(url: string): Promise<Response> {
+  return performRequest(url, getDefaultAuth());
 }

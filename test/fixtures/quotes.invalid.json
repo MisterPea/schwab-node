@@ -1,0 +1,11 @@
+{
+  "AAPL": {
+    "assetMainType": "EQUITY",
+    "assetSubType": "COE",
+    "ssid": 101,
+    "quote": {
+      "bidPrice": 180.12,
+      "askPrice": 180.18
+    }
+  }
+}

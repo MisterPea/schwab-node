@@ -1,69 +1,27 @@
-import process from "node:process";
-import { SchwabAuth } from "./oauth/schwabAuth.js";
-import { getPriceHistory, getQuote } from "./marketData/quotes.js";
-import { ChartRequest, OptionChainReq } from "./types.js";
-import { getAtmOptionData, getOptionChain, getOptionExpirations, greekFilter } from "./marketData/derivatives.js";
+import { greekFilter } from "./marketData/derivatives.js";
+import { GreekFilterReq } from "./types.js";
 
-process.loadEnvFile('.env');
+/* To run smoke test: RUN_LIVE_TESTS=1 npm run test:live:smoke */
+export * from "./types.js";
+// export * from "./helpers.js";
 
-function reqEnv(name: string) {
-  const v = process.env[name];
-  if (!v) throw new Error(`Missing env var ${name}`);
-  return v;
-}
+export * from "./oauth/schwabAuth.js";
+// export * from "./oauth/tokenStore.js";
+// export * from "./oauth/server.js";
+// export * from "./oauth/defaultAuth.js";
 
-/**
- * Centrally located accessor to auth logic
- */
-export const auth = new SchwabAuth({
-  clientId: reqEnv("SCHWAB_CLIENT_ID"),
-  clientSecret: reqEnv("SCHWAB_CLIENT_SECRET"),
-  redirectUri: reqEnv("SCHWAB_REDIRECT_URI")
-});
-
-async function main() {
-
-  // // const token = await auth.getAuth();
-  // const config: ChartRequest = {
-  //   symbol: 'AAPL',
-  //   periodType: 'day',
-  //   period: 5,
-  //   frequencyType: 'minute',
-  //   frequency: 5,
-  //   startDate:'2020-10-01'
-  // };
-  // getPriceHistory(config);
+// export * from "./marketData/request.js";
+export * from "./marketData/quotes.js";
+export * from "./marketData/derivatives.js";
+export * from "./marketData/highLevelData.js";
 
 
-  // const optionConfig: OptionChainReq = {
-  //   symbol: 'AMZN',
-
-  //   fromDate: '2026-02-09',
-  //   toDate: '2026-02-20',
-
-  //   strikeCount: 3,
-  // };
-
-  // const gf = await greekFilter('AAPL', [1, 19], { absDelta: [0.38, 0.52], }, 'BOTH');
-  // console.log(gf);
-  // const opChain = await getOptionChain(optionConfig);
-  // console.log(opChain[0].callExpDateMap);
-  // getQuote({ symbols: 'Q' });
-  // const op = await getOptionExpirations({ symbol: 'AMZN' });
-  // console.log(op)
-  const config: ChartRequest = {
+(async function () {
+  const config: GreekFilterReq = {
     symbol: 'AAPL',
-    periodType: 'year'
+    window: [0, 4],
+    greek: { 'absDelta': [0.40, 0.65] }
   };
-  const p = await getPriceHistory(config);
-  console.log(JSON.stringify(p, undefined, 1));
-
-  // const a = await getAtmOptionData({ symbol: 'AAPL', window: [7, 12] });
-  // console.log(a)
-}
-
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
-
+  const a = await greekFilter(config);
+  console.log(JSON.stringify(a,undefined,1))
+})();

@@ -21,14 +21,21 @@ export async function listenForAuthCode(redirectUri: string, timeoutSec: number 
   const u = new URL(redirectUri);
   if (u.protocol !== 'https:') throw new Error(`Expected https redirect, got ${redirectUri}`);
 
-  const certPath = `${CERTIFICATES_PATH}/127.0.0.1.pem`;
-  const keyPath = `${CERTIFICATES_PATH}/127.0.0.1-key.pem`;
-
   const hostname = u.hostname;
+  const certPath = `${CERTIFICATES_PATH}/${hostname}.pem`;
+  const keyPath = `${CERTIFICATES_PATH}/${hostname}-key.pem`;
   const port = Number(u.port) || '443';
   const pathname = u.pathname || '/';
 
-  const [cert, key] = await Promise.all([readFile(certPath), readFile(keyPath)]);
+  let cert: Buffer;
+  let key: Buffer;
+  try {
+    [cert, key] = await Promise.all([readFile(certPath), readFile(keyPath)]);
+  } catch {
+    throw new Error(
+      `Missing HTTPS certs for host "${hostname}". To install certificates, run: npx schwab-node-certs`
+    );
+  }
 
   const app = express();
 

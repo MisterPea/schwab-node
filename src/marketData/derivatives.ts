@@ -137,11 +137,9 @@ export async function getAtmOptionData(config: GetAtmOptionReq): Promise<AtmOpti
         optionDeliverablesList
       } = expirations[k][closestStrike][0] as OptionQuote;
 
-      const underlying = optionDeliverablesList?.[0]?.symbol ?? '';
-
       atmOptionInfo.push({
         put_call,
-        day_of_week: weekDays[new Date().getDay()] as AtmOptionRtn['day_of_week'],
+        day_of_week: weekDays[(new Date().getDay() + dte) % 7] as AtmOptionRtn['day_of_week'],
         underlying: optionDeliverablesList[0].symbol || '',
         open_interest: openInterest,
         total_volume: totalVolume,
@@ -162,15 +160,16 @@ export async function getAtmOptionData(config: GetAtmOptionReq): Promise<AtmOpti
 /**
  * Find options of a specific range of absDelta, delta, vega, theta, gamma, rho, or iv
  * absDelta is useful for finding all (e.g) delta 0.30 even though puts will have negative delta
- * @param {string} symbol Symbol of the underlying
- * @param {Array<number, number>} window DTE search window
- * @param {Object<Greeks,[number, number]>} greek Object with keys of greeks, iv, or absDelta with a inclusive value tuple of [min,max]
- * @param {'CALL'|'PUT'|'BOTH'} side Which option side to search
- * @param {number?} strikeCount Optional number of strikes to include. Default is 20
+ * @param {GreekFilterReq} config
+ * @param {string} config.symbol Symbol of the underlying
+ * @param {[number, number]} config.window DTE search window
+ * @param {Object<Greeks,[number, number]>} config.greek Object with keys of greeks, iv, or absDelta with an inclusive value tuple of [min,max]
+ * @param {'CALL'|'PUT'|'BOTH'} [config.side] Which option side to search
+ * @param {number} [config.strikeCount] Optional number of strikes to include. Default is 20
  * @returns {Promise<GreekFilterRtn>}
  */
-export async function greekFilter(...args: GreekFilterReq) {
-  const [symbol, window, greek, side = 'BOTH', strikeCount = 20] = args;
+export async function greekFilter(config: GreekFilterReq) {
+  const { symbol, window, greek, side = 'BOTH', strikeCount = 20 } = config;
   const maxWindow = addDays(Math.max(...window)) as ISODate;
   const minWindow = addDays(Math.min(...window)) as ISODate;
 

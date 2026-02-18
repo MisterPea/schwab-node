@@ -427,12 +427,67 @@ export type GreekFilterRtn = {
   rho: number;
 };
 
-export type GreekFilterReq = [
-  symbol: string,
-  window: [number, number],
-  greek: Partial<Record<Greeks, [number, number]>>,
-  side?: 'CALL' | 'PUT' | 'BOTH',
-  strikeCount?: number,
-];
+export type GreekFilterReq = {
+  symbol: string;
+  window: [number, number];
+  greek: Partial<Record<Greeks, [number, number]>>;
+  side?: 'CALL' | 'PUT' | 'BOTH';
+  strikeCount?: number;
+};
 
-export type GetMarketDataConfig = ChartRequest | OptionChainReq | OptionExpirationReq | GetQuoteReq;
+// High-level data **********************************************************************
+export interface MoversConfig {
+  sort: 'VOLUME' | 'TRADES' | 'PERCENT_CHANGE_UP' | 'PERCENT_CHANGE_DOWN';
+  frequency?: 0 | 1 | 5 | 10 | 30 | 60;
+};
+
+export interface GetMoversConfig extends MoversConfig {
+  index: '$DJI' | '$COMPX' | '$SPX' | 'NYSE' | 'NASDAQ' | 'OTCBB' | 'INDEX_ALL' | 'EQUITY_ALL' | 'OPTION_ALL' | 'OPTION_PUT' | 'OPTION_CALL';
+}
+
+export interface ScreenerItem {
+  readonly description: string;
+  readonly volume: number;
+  readonly lastPrice: number;
+  readonly netChange: number;
+  readonly marketShare: number;
+  readonly totalVolume: number;
+  readonly trades: number;
+  readonly netPercentChange: number;
+  readonly symbol: string;
+}
+
+export interface ScreenersResponseItem {
+  readonly screeners: readonly ScreenerItem[];
+}
+
+export type ScreenersResponse = readonly ScreenersResponseItem[];
+
+// Market hours
+type AvailableMarkets = 'equity' | 'option' | 'bond' | 'future' | 'forex';
+
+export interface GetMarketHoursConfig {
+  markets: AvailableMarkets[];
+  date?: ISODate;
+}
+
+export interface MarketSession {
+  date: string; // ISO date (e.g. "2027-01-10")
+  marketType: string; // could be narrowed later if needed
+  product: string; // matches the market key (e.g. "equity", "bond")
+  isOpen: boolean;
+}
+
+export interface MarketSessionHoursRange {
+  start: string;
+  end: string;
+}
+
+export type MarketSessionHours = Record<string, MarketSessionHoursRange[]>;
+
+export interface MarketHoursRtn {
+  date: string;
+  marketType: string;
+  isOpen: boolean;
+  sessionHours?: MarketSessionHours;
+}

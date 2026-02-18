@@ -58,20 +58,3 @@ export async function getQuote(config: GetQuoteReq): Promise<QuoteRtn[]> {
   if (!result.length) throw new Error(`No quote data returned for symbols: ${config.symbols}`);
   return result;
 }
-
-
-/* 
-[
- {
-  "symbol": "AAPL",
-  "empty": false,
-  "candles": [
-   {
-    "open": 241.79,
-    "high": 244.0272,
-    "low": 208.42,
-    "close": 222.13,
-    "volume": 1115306052,
-    "datetime": 1740808800000
-   },
-*/

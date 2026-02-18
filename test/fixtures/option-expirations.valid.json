@@ -1,0 +1,12 @@
+{
+  "expirationList": [
+    {
+      "expirationDate": "2026-02-20",
+      "daysToExpiration": 3,
+      "expirationType": "W",
+      "settlementType": "P",
+      "optionRoots": "AAPL",
+      "standard": true
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 import { listenForAuthCode, tryOpenBrowser } from "./server.js";
 import { FileTokenStore, TokenSet } from "./tokenStore.js";
 
-type SchwabAuthConfig = {
+export type SchwabAuthConfig = {
   clientId: string;
   clientSecret: string;
   redirectUri: string;

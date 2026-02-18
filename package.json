@@ -1,14 +1,34 @@
 {
-  "name": "template-node-ts",
-  "version": "1.0.0",
+  "name": "schwab-node",
+  "version": "0.1.0",
   "description": "Minimal TypeScript/Node.js template",
   "license": "MIT",
   "author": "Perry Angelora",
+  "engines": {
+    "node": ">=20.6.0"
+  },
   "type": "module",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "schwab-node-certs": "./dist/scripts/setup-certs.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "start": "tsx watch src/index.ts",
-    "test": "vitest",
+    "test": "vitest run --exclude \"test/**/*.live.test.ts\"",
+    "test:contract": "vitest run -c vitest.contract.config.ts",
+    "test:live:smoke": "vitest run -c vitest.live-smoke.config.ts",
+    "prepack": "npm run build",
+    "certs:install": "node --import tsx src/scripts/setup-certs.ts",
     "lint": "npx eslint .",
     "coverage": "vitest run --coverage",
     "build": "tsc"

@@ -48,8 +48,10 @@ A client request will consist of an array of one or more commands. Each command 
 | VIEW | This changes the field subscription for a particular service. It will apply to all symbols for that particular service. |
 | LOGOUT | Logs out of the streamer connection. Streamer will close the connection. |
 
-_**Example:**_  
-_**One Request**_  
+<details> 
+<summary>One Request Example Shape</summary>
+
+```json
 {  
   "requestid": "0",  
   "service": "LEVELONE\_EQUITIES",  
@@ -60,10 +62,14 @@ _**One Request**_
    "keys": "AAPL",  
    "fields": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54"  
   }  
-}  
- 
+} 
+```
+</details>
 
-_**Multiple Requests**_  
+<details> 
+<summary>Multiple Request Example Shape</summary>
+
+```json
 {  
   "requests": \[  
    {  
@@ -91,14 +97,16 @@ _**Multiple Requests**_
    }  
   \]  
 }
+```
+</details>
 
 _**3\. Response Format**_  
 There are currently three types of responses:  
  
 
-*   Response â€“ Response to a request
-*   Notify â€“ Notification of heartbeats
-*   Data â€“ Streaming market data
+*   Response : Response to a request
+*   Notify : Notification of heartbeats
+*   Data : Streaming market data
 
   
 A client response will consist of an array of one or more responses. Each response will include:  
@@ -111,8 +119,10 @@ A client response will consist of an array of one or more responses. Each respon
 | command | Command from the request | LOGIN, SUBS, ADD, UNSUBS, VIEW, LOGOUT |
 | content | Data content |
 
-  
-Examples:  
+<details>
+<summary>Response Example Shape</summary>
+
+```json
 {"notify":\[{"heartbeat":"1668715930582"}\]}  
   
 {  
@@ -190,11 +200,9 @@ Examples:
    \]  
   }  
  \]  
-}  
- 
-
-  
- 
+}
+```
+</details>
 
 _**4\. Response Codes**_  
  
@@ -251,7 +259,10 @@ _**1\. Login Request**_
 | SchwabClientChannel | String | 2   | Identifies the channel as found through the GET User Preferences endpoint. |
 | SchwabClientFunctionId | String | 5   | Identifies the page or source in the channel where quote is being called from (5 alphanumeric).   <br>Found through the GET User Preferences endpoint. |
 
-_**Streamer LOGIN Request Example:**_  
+<details>
+<summary>Streamer LOGIN Request Example</summary>
+
+```json
 {  
  "requests": \[  
   {  
@@ -267,10 +278,9 @@ _**Streamer LOGIN Request Example:**_
    }  
   }  
  \]  
-}  
- 
-
-  
+}
+```
+</details>
  
 
 _**2\. Login Response**_  
@@ -287,7 +297,10 @@ _**2\. Login Response**_
 | **msg** | String | server=hostname-instance (for troubleshooting purposes)  <br>status=PN (Non-Paying Pro)  <br>NP (Non-Pro)  <br>PP (Paying-Pro)  <br>if no entitlements, client will get nfl/delayed quotes  <br>error message if there's a login issue |
 
 _**Streamer LOGIN Response Examples:**_  
-_**Login Successful**_  
+<details>
+<summary>Login Successful Response Example</summary>
+
+```json
 {  
  "response": \[  
   {  
@@ -302,10 +315,14 @@ _**Login Successful**_
    }  
   }  
  \]  
-}  
- 
+}
+```
+</details>
 
-_**Login Denied**_  
+<details>
+<summary>Login Denied Response Example</summary>
+
+```json
 {  
  "response": \[  
   {  
@@ -320,11 +337,11 @@ _**Login Denied**_
    }  
   }  
  \]  
-}  
+}
+```
+</details>
  
 
-  
- 
 
 _**3\. Logout request**_  
  
@@ -338,8 +355,6 @@ _**3\. Logout request**_
 | SchwabClientCorrelId | String | Variable | Unique **identifier** value that is attached to requests and messages that allow reference to a particular transaction or event chain. |
 | parameters | String | Variable | Can leave empty |
 
-  
- 
 
 _**4\. Logout response**_  
  
@@ -354,7 +369,10 @@ _**4\. Logout response**_
 | content | **code** | Integer | 0 = Success, 3 = Login denied |
 | **msg** | String | SUCCESS, FAILURE |
 
-**Streamer Logout Response Examples:**  
+<details>
+<summary>Streamer Logout Response Example</summary>
+
+```json
 {  
  "response": \[  
   {  
@@ -369,11 +387,9 @@ _**4\. Logout response**_
    }  
   }  
  \]  
-}  
- 
-
-  
- 
+} 
+```
+</details>
 
 ## 3\. LEVELONE Services
 
@@ -382,16 +398,20 @@ _**1\. LEVELONE\_EQUITIES**_
 
 **Level One Equities Request**  
  
-| _Streamer Contract name_ | _Type_ | _Length_ | _Description_ |
-| service |     | String | Variable | LEVELONE\_EQUITIES |
-| command |     | String | Variable | SUBS, UNSUBS, ADD, VIEW |
+| _Streamer Contract name_ | _Type_ | _Length_ | _Description_ | |
+| --- | --- | --- | --- | --- |
+| service |    | String | Variable | LEVELONE\_EQUITIES |
+| command |    | String | Variable | SUBS, UNSUBS, ADD, VIEW |
 | requestid |     | Integer | Variable | Unique number that will identify this request. |
 | SchwabClientCustomerId |     | String | Variable | \`schwabClientCustomerId\` as found in GET User Preference endpoint |
 | SchwabClientCorrelId |     | String | Variable | Unique **identifier** value that is attached to requests and messages that allow reference to a particular transaction or event chain. |
 | parameters | keys | String | Variable | Schwab-standard symbols in uppercase and separated by commas  <br>e.g. AAPL,TSLA,IBM |
 | fields | String | Variable | Please see the LEVELONE\_EQUITIES Field Definition table below |
 
-**LEVELONE\_EQUITIES Request Example:**  
+<details>
+<summary>LEVELONE_EQUITIES Request Example</summary>
+
+```json
 {  
  "requests": \[  
   {  
@@ -406,7 +426,9 @@ _**1\. LEVELONE\_EQUITIES**_
    }  
   }  
  \]  
-}  
+}
+```
+</details>
  
 
 **Response Field Definitions**  
@@ -420,7 +442,10 @@ Outside of fields that can be subscribed to, Streamer also returns initial data 
 | assetSubType | String | Asset sub type | ADR, CEF, COE, ETF, ETN, GDR, OEF, PRF, RGT, UIT, WAR |
 | cusip | String | 9 digits CUSIP | CUSIP number for the instrument, such as 594918104 |
 
-**LEVELONE\_EQUITIES Response Example:**  
+<details>
+<summary>LEVELONE_EQUITIES Response Example</summary>
+
+```json
 {  
  "data": \[  
   {  
@@ -474,17 +499,66 @@ Outside of fields that can be subscribed to, Streamer also returns initial data 
   }  
  \]  
 }  
+```
+</details>
  
 
-_Fields__Field Name__Type__Field Description__Notes, Examples Source_0SymbolStringTicker symbol in upper case. 1Bid PricedoubleCurrent Bid Price 2Ask PricedoubleCurrent Ask Price 3Last PricedoublePrice at which the last trade was matched 4Bid SizeintNumber of shares for bidUnits are "lots" (typically 100 shares per lot)Note for NFL data this field can be 0 with a non-zero bid price which representing a bid size of less than 100 shares.5Ask SizeintNumber of shares for askSee bid size notes.6Ask IDcharExchange with the ask 7Bid IDcharExchange with the bid 8Total VolumelongAggregated shares traded throughout the day, including pre/post market hours.Volume is set to zero at 7:28am ET.9Last SizelongNumber of shares traded with last tradeUnits are shares10High PricedoubleDay's high trade priceAccording to industry standard, only regular session trades set the High and Low  
-If a stock does not trade in the regular session, high and low will be zero.  
-High/low reset to ZERO at 3:30am ET11Low PricedoubleDay's low trade priceSee High Price notes12Close PricedoublePrevious day's closing priceClosing prices are updated from the DB at 3:30 AM ET.13Exchange IDcharPrimary "listing" Exchange
+| _Fields_ | _Field Name_ | _Type_ | _Field Description_ | _Notes, Examples Source_ | 
+| --- | --- | --- | --- | --- |
+| 0 | Symbol | String | Ticker symbol in upper case. | |
+| 1 | Bid Price | double | Current Bid Price | |
+| 2 | Ask Price | double | Current Ask Price | |
+| 3 | Last Price| double | Price at which the last trade was matched ||
+| 4 | Bid Size | int | Number of shares for bid | Units are "lots" (typically 100 shares per lot) Note for NFL data this field can be 0 with a non-zero bid price which representing a bid size of less than 100 shares. | 
+| 5 | Ask Size | int | Number of shares for askSee bid size notes.
+| 6 | Ask ID | char | Exchange with the ask ||
+| 7 | Bid ID | char | Exchange with the bid ||
+| 8 | Total Volume | long | Aggregated shares traded throughout the day, including pre/post market hours.Volume is set to zero at 7:28am ET. ||
+| 9 | Last Size | long | Number of shares traded with last trade | Units are shares | 
+| 10 | High Price | double | Day's high trade price | According to industry standard, only regular session trades set the High and Low  If a stock does not trade in the regular session, high and low will be zero. High/low reset to ZERO at 3:30am ET |
+| 11 | Low Price | double | Day's low trade price | See High Price notes | 
+| 12 | Close Price | double | Previous day's closing price | Closing prices are updated from the DB at 3:30 AM ET. | 
+| 13 | Exchange ID | char | Primary "listing" Exchange | As long as the symbol is valid, this data is always present. This field is updated every time the closing prices are loaded from DB. (see exchange insert at the bottom of this section) |
+| 14 | Marginable | boolean | Stock approved by the Federal Reserve and an investor's broker as being eligible for providing collateral for margin debt.|| 
+| 15 | Description | String | A company, index or fund name | Once per day descriptions are loaded from the database at 7:29:50 AM ET | 
+| 16 | Last ID |char | Exchange where last trade was executed || 
+| 17 | Open Price | double | Day's Open Price According to industry standard, only regular session trades set the open. | If a stock does not trade during the regular session, then the open price is 0. In the pre-market session, open is blank because pre-market session trades do not set the open. Open is set to ZERO at 3:30am ET. | 
+| 18 | Net Change | double |  LastPrice - ClosePrice | If close is zero, change will be zero | 
+| 19 | 52 Week High | double | Higest price traded in the past 12 months, or 52 weeks | Calculated by merging intraday high (from fh) and 52-week high (from db)|
+| 20 | 52 Week Low | double | Lowest price traded in the past 12 months, or 52 weeks | Calculated by merging intraday low (from fh) and 52-week low (from db) | 
+| 21 | PE Ratio | double | Price-to-earnings ratio. | The P/E equals the price of a share of stock, divided by the company's earnings-per-share. Note that the "price of a share of stock" in the definition does update during the day so this field has the potential to stream. However, the current implementation uses the closing price and therefore does not stream throughout the day. |  
+| 22 | Annual Dividend Amount | double | Annual Dividend Amount ||
+| 23 | Dividend Yield | double | Dividend Yield || 
+| 24 | NAV | double | Mutual Fund Net Asset Value | Load various times after market close|
+| 25 | Exchange Name | String | Display name of exchange||
+| 26 | Dividend Date | String  |||
+| 27 | Regular Market Quote | boolean | Is last quote a regular quote || 
+| 28 | Regular Market Trade | boolean | Is last trade a regular trade || 
+| 29 | Regular Market Last Price | double |  Only records regular trade || 
+| 30 | Regular Market Last Size | integer | Currently realize/100, only records regular trade || 
+| 31 | Regular Market Net Change | double |  RegularMarketLastPrice - ClosePrice || 
+| 32 | Security Status | String Indicates a symbols current trading status, Normal, Halted, Closed ||
+| 33 | Mark Price | double | Mark Price ||
+| 34 | Quote Time in Long | Long | Last time a bid or ask updated in milliseconds since Epoch | The difference, measured in milliseconds, between the time an event occurs and midnight, January 1, 1970 UTC. | 
+| 35 | Trade Time in Long | Long | Last trade time in milliseconds since Epoch | The difference, measured in milliseconds, between the time an event occurs and midnight, January 1, 1970 UTC. | 
+| 36 | Regular Market Trade Time in Long | Long | Regular market trade time in milliseconds since Epoch | The difference, measured in milliseconds, between the time an event occurs and midnight, January 1, 1970 UTC.|
+| 37 | Bid Time | Long | Last bid time in milliseconds since Epoch | The difference, measured in milliseconds, between the time an event occurs and midnight, January 1, 1970 UTC.|
+| 38 | Ask Time | Long | Last ask time in milliseconds since Epoch | The difference, measured in milliseconds, between the time an event occurs and midnight, January 1, 1970 UTC.| 
+| 39 | Ask MIC ID | String | 4-chars Market Identifier Code || 
+| 40 | Bid MIC ID | String | 4-chars Market Identifier Code ||
+| 41 | Last MIC ID | String | 4-chars Market Identifier Code || 
+| 42 | Net Percent Change | double | Net Percentage Change | NetChange / ClosePrice \* 100 | 
+| 43 | Regular Market Percent Change | double | Regular market hours percentage change | RegularMarketNetChange / ClosePrice \* 100|
+| 44 | Mark Price Net Change | double | Mark price net change |7.97|
+| 45 | Mark Price Percent Change | double | Mark price percentage change | 4.2358 | 
+| 46 | Hard to Borrow Quantity | integer | \-1 = NULL \>= 0 is valid quantity||
+| 47 | Hard To Borrow Rate | double |  null = NULL valid range = -99,999.999 to +99,999.999||
+| 48 | Hard to Borrow | integer| \-1 = NULL 1 = true 0 = false||
+| 49 | shortable | integer | \-1 = NULL  1 = true  0 = false || 
+| 50 | Post-Market Net Change | double | Change in price since the end of the regular session (typically 4:00pm) | PostMarketLastPrice - RegularMarketLastPrice|
+|51 | Post-Market Percent Change | double | Percent Change in price since the end of the regular session (typically 4:00pm) |PostMarketNetChange / RegularMarketLastPrice \* 100 |
 
-As long as the symbol is valid, this data is always present  
-This field is updated every time the closing prices are loaded from DB  
- 
-
-| _Exchange_ | _Code_ | _Realtime/NFL_ |
+  | _Exchange_ | _Code_ | _Realtime/NFL_ |
 | --- | --- | --- |
 | AMEX | A   | Both |
 | Indicator | :   | Realtime Only |
@@ -495,21 +569,6 @@ This field is updated every time the closing prices are loaded from DB
 | Pacific | P   | Both |
 | Pinks | 9   | Realtime Only |
 | OTCBB | U   | Realtime Only |
-
-14MarginablebooleanStock approved by the Federal Reserve and an investor's broker as being eligible for providing collateral for margin debt. 15DescriptionStringA company, index or fund nameOnce per day descriptions are loaded from the database at 7:29:50 AM ET.16Last IDcharExchange where last trade was executed 17Open PricedoubleDay's Open Price According to industry standard, only regular session trades set the open.  
-If a stock does not trade during the regular session, then the open price is 0.  
-In the pre-market session, open is blank because pre-market session trades do not set the open.   
-Open is set to ZERO at 3:30am ET.18Net Changedouble LastPrice - ClosePrice  
-If close is zero, change will be zero1952 Week HighdoubleHigest price traded in the past 12 months, or 52 weeksCalculated by merging intraday high (from fh) and 52-week high (from db)2052 Week LowdoubleLowest price traded in the past 12 months, or 52 weeksCalculated by merging intraday low (from fh) and 52-week low (from db)21PE RatiodoublePrice-to-earnings ratio.   
-The P/E equals the price of a share of stock, divided by the company's earnings-per-share.Note that the "price of a share of stock" in the definition does update during the day so this field has the potential to stream. However, the current implementation uses the closing price and therefore does not stream throughout the day.22Annual Dividend AmountdoubleAnnual Dividend Amount 23Dividend YielddoubleDividend Yield 24NAVdoubleMutual Fund Net Asset ValueLoad various times after market close25Exchange NameStringDisplay name of exchange 26Dividend DateString  27Regular Market Quoteboolean Is last quote a regular quote28Regular Market Tradeboolean Is last trade a regular trade29Regular Market Last Pricedouble Only records regular trade30Regular Market Last Sizeinteger Currently realize/100, only records regular trade31Regular Market Net Changedouble RegularMarketLastPrice - ClosePrice32Security StatusString Indicates a symbols current trading status, Normal, Halted, Closed33Mark PricedoubleMark Price 34Quote Time in LongLongLast time a bid or ask updated in milliseconds since EpochThe difference, measured in milliseconds, between the time an event occurs and midnight, January 1, 1970 UTC.35Trade Time in LongLongLast trade time in milliseconds since EpochThe difference, measured in milliseconds, between the time an event occurs and midnight, January 1, 1970 UTC.36Regular Market Trade Time in LongLongRegular market trade time in milliseconds since EpochThe difference, measured in milliseconds, between the time an event occurs and midnight, January 1, 1970 UTC.37Bid TimelongLast bid time in milliseconds since EpochThe difference, measured in milliseconds, between the time an event occurs and midnight, January 1, 1970 UTC.38Ask TimelongLast ask time in milliseconds since EpochThe difference, measured in milliseconds, between the time an event occurs and midnight, January 1, 1970 UTC.39Ask MIC IDString4-chars Market Identifier Code 40Bid MIC IDString4-chars Market Identifier Code 41Last MIC IDString4-chars Market Identifier Code 42Net Percent ChangedoubleNet Percentage ChangeNetChange / ClosePrice \* 10043Regular Market Percent ChangedoubleRegular market hours percentage changeRegularMarketNetChange / ClosePrice \* 10044Mark Price Net ChangedoubleMark price net change7.9745Mark Price Percent ChangedoubleMark price percentage change4.235846Hard to Borrow Quantityinteger \-1 = NULL  
-\>= 0 is valid quantity47Hard To Borrow Ratedouble null = NULL  
-valid range = -99,999.999 to +99,999.99948Hard to Borrowinteger \-1 = NULL  
-1 = true  
-0 = false49shortableinteger \-1 = NULL  
-1 = true  
-0 = false50Post-Market Net ChangedoubleChange in price since the end of the regular session (typically 4:00pm)PostMarketLastPrice - RegularMarketLastPrice51Post-Market Percent ChangedoublePercent Change in price since the end of the regular session (typically 4:00pm)PostMarketNetChange / RegularMarketLastPrice \* 100
-
-  
  
 
 _**2\. LEVELONE\_OPTIONS**_  
@@ -518,7 +577,6 @@ _**2\. LEVELONE\_OPTIONS**_
 Please refer to LEVELONE\_EQUITIES for REQUESTS and RESPONSE examples. Replace LEVELONE\_EQUITIES with LEVELONE\_OPTIONS.
 
 **Level One Options Request**  
- 
 
 | _Streamer Contract name_ |     | _Type_ | _Length_ | _Description_ |
 | --- | --- | --- | --- | --- |
@@ -531,9 +589,8 @@ Please refer to LEVELONE\_EQUITIES for REQUESTS and RESPONSE examples. Replace L
 | fields | String | Variable | Please see the LEVELONE\_OPTIONS Field Definition table below |
 
 **Response Field Definitions**  
- 
 
-| _Streamer Contract name_ |     | _Type_ | _Length_ | _Description_ |
+| _Streamer Contract name_ |     | _Type_ | _Length_ | _Description_ | | |
 | --- | --- | --- | --- | --- | --- | --- |
 | 0   | Symbol | String | Ticker symbol in upper case. | N/A | N/A |     |
 | 1   | Description | String | A company, index or fund name | Yes | Yes | Descriptions are loaded from the database daily at 3:30 am ET. |
@@ -592,16 +649,11 @@ Please refer to LEVELONE\_EQUITIES for REQUESTS and RESPONSE examples. Replace L
 | 54  | Indicative Quote Time | long | The latest time the indicative bid/ask prices updated in milliseconds since Epoch |     | Only valid for index options (0 for all other options)  <br>The difference, measured in milliseconds, between the time an event occurs and midnight, January 1, 1970 UTC. |     |
 | 55  | Exercise Type | char |     |     |     |     |
 
-  
- 
-
 _**3\. LEVELONE\_FUTURES**_  
- 
 
 Please refer to LEVELONE\_EQUITIES for REQUESTS and RESPONSE examples. Replace LEVELONE\_EQUITIES with LEVELONE\_FUTURES.
 
 **Level One Futures Fields for Streamer**  
- 
 
 | _Streamer Contract name_ |     | _Type_ | _Length_ | _Description_ |
 | --- | --- | --- | --- | --- |
@@ -615,7 +667,6 @@ Please refer to LEVELONE\_EQUITIES for REQUESTS and RESPONSE examples. Replace L
 
 **Response Field Definitions**  
  
-
 | _Field_ | _Field Name_ | _Type_ | _Field Description_ | _Update Regular Hours_ | _Update AM/PM Hours_ | _Notes, Examples Source_ |
 | --- | --- | --- | --- | --- | --- | --- |
 | 0   | Symbol |     | String | Ticker symbol in upper case. | N/A | N/A |
@@ -660,21 +711,16 @@ Please refer to LEVELONE\_EQUITIES for REQUESTS and RESPONSE examples. Replace L
 | 39  | Quoted In Session | boolean | Indicates if this contract has quoted during the active session |     |     |     |
 | 40  | Settlement Date | long | Expiration date of this contract | N/A | N/A | Milliseconds since epoch |
 
-  
 For more examples on Futures Price format, see: [https://www.cmegroup.com/confluence/display/EPICSANDBOX/Fractional+Pricing+-+Display+Examples](https://www.cmegroup.com/confluence/display/EPICSANDBOX/Fractional+Pricing+-+Display+Examples)  
   
 If the DST-flag is present for Futures Trading Hours (field 29), please see the following hours for DST days: [https://www.cmegroup.com/confluence/display/EPICSANDBOX/Fractional+Pricing+-+Display+Examples](https://www.cmegroup.com/confluence/display/EPICSANDBOX/Fractional+Pricing+-+Display+Examples)
 
-  
- 
 
 _**4\. LEVELONE\_FUTURES\_OPTIONS**_  
  
-
 Please refer to LEVELONE\_EQUITIES for REQUESTS and RESPONSE examples. Replace LEVELONE\_EQUITIES with LEVELONE\_FUTURES\_OPTIONS.
 
 **Level One Futures Options Fields for Streamer**  
- 
 
 | _Streamer Contract name_ |     | _Type_ | _Length_ | _Description_ |
 | --- | --- | --- | --- | --- |
@@ -687,7 +733,6 @@ Please refer to LEVELONE\_EQUITIES for REQUESTS and RESPONSE examples. Replace L
 | fields | String | Variable | Please see the LEVELONE\_FUTURES\_OPTIONS Field Definition table below |
 
 **Response Field Definitions**  
- 
 
 | _Fields_ | _Field Name_ | _Type_ | _Field Description_ | _Update Regular Hours_ | _Update AM/PM Hours_ | _Notes, Examples Source_ |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -724,16 +769,11 @@ Please refer to LEVELONE\_EQUITIES for REQUESTS and RESPONSE examples. Replace L
 | 30  | Exchange | char | Exchange character | Yes | Yes |     |
 | 31  | Exchange Name | String | Display name of exchange | Yes | Yes |     |
 
-  
- 
-
 _**5\. LEVELONE\_FOREX**_  
- 
 
 Please refer to LEVELONE\_EQUITIES for REQUESTS and RESPONSE examples. Replace LEVELONE\_EQUITIES with LEVELONE\_FOREX.
 
 **Level One Forex Request for Streamer**  
- 
 
 | _Streamer Contract name_ |     | _Type_ | _Length_ | _Description_ |
 | --- | --- | --- | --- | --- |
@@ -747,7 +787,6 @@ Please refer to LEVELONE\_EQUITIES for REQUESTS and RESPONSE examples. Replace L
 
 **Response Field Definitions**  
  
-
 | _Fields_ | _Field Name_ | _Type_ | _Field Description_ | _Update Regular Hours_ | _Update AM/PM Hours_ | _Notes, Examples Source_ |
 | --- | --- | --- | --- | --- | --- | --- |
 | 0   | Symbol | String | Ticker symbol in upper case. | N/A | N/A |     |
@@ -781,13 +820,9 @@ Please refer to LEVELONE\_EQUITIES for REQUESTS and RESPONSE examples. Replace L
 | 28  | 52 Week Low | double | Lowest price traded in the past 12 months, or 52 weeks | Yes | Yes |     |
 | 29  | Mark | double | Mark-to-Market value is calculated daily using current prices to determine profit/loss | Yes | Yes |     |
 
-  
- 
-
 ## 4\. BOOK Services
 
 _**1\. Book Common**_  
- 
 
 | _**Streamer Contract name**_ |     | _**Type**_ | _**Length**_ | _**Description**_ |
 | --- | --- | --- | --- | --- |
@@ -802,7 +837,6 @@ _**1\. Book Common**_
 **Response field definitions**
 
 **Book Fields for Streamer**  
- 
 
 | _**Fields**_ | _**Field Name**_ | _**Value**_ | _**Type**_ | _**Description**_ |
 | --- | --- | --- | --- | --- |
@@ -813,7 +847,6 @@ _**1\. Book Common**_
 
 **Book Price Levels Sub-Field for Streamer**  
  
-
 | _**Price Levels**_   <br>_**Field #**_ | _**Field Name**_ | _**Type**_ | _**Description**_ |
 | --- | --- | --- | --- |
 | 0   | Price | double | Price for this level |
@@ -823,24 +856,17 @@ _**1\. Book Common**_
 
 **Book Market Makers Sub-Field for Streamer**  
  
-
 | _**Market Makers**_  <br>_**Field #**_ | _**Field Name**_ | _**Type**_ | _**Description**_ |
 | --- | --- | --- | --- |
 | 0   | Market Maker ID | String | Market Maker ID |
 | 1   | Size | long | Size of the Market Maker for this price level |
 | 2   | Quote Time | long | Quote time in milliseconds for this Market Maker's quote |
 
-  
- 
-
 ## 5\. CHART Services
 
 _**1\. CHART\_EQUITY**_  
  
-
 **Chart Equity Request for Streamer**  
- 
-
 | _**Streamer Contract name**_ |     | _**Type**_ | _**Length**_ | _**Description**_ |
 | --- | --- | --- | --- | --- |
 | service |     | String | Variable | CHART\_EQUITY |
@@ -852,7 +878,6 @@ _**1\. CHART\_EQUITY**_
 | fields | String | Variable | Please see the CHART\_EQUITY Field Definition table below |
 
 **Response field definitions**  
- 
 
 | _**Fields**_ | _**Field Name**_ | _**Type**_ | _**Field Description**_ | _**Update Regular Hours**_ | _**Update AM/PM Hours**_ | _**Notes, Examples Source**_ |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -866,14 +891,9 @@ _**1\. CHART\_EQUITY**_
 | 7   | Chart Time | long | Milliseconds since Epoch | Yes | Yes |     |
 | 8   | Chart Day | int |     |     |     |     |
 
-  
- 
-
 _**2\. CHART\_FUTURES**_  
  
-
 **Chart Futures Request for Streamer**  
- 
 
 | _**Streamer Contract name**_ |     | _**Type**_ | _**Length**_ | _**Description**_ |
 | --- | --- | --- | --- | --- |
@@ -898,17 +918,11 @@ _**2\. CHART\_FUTURES**_
 | 5   | Close Price | double | Closing price for the minute | Yes | Yes |     |
 | 6   | Volume | double | Total volume for the minute | Yes | Yes |     |
 
-  
- 
-
 ## 6\. SCREENER services
 
 _**1\. Screener Common**_  
  
-
 **Screener Request for Streamer**  
- 
-
 | _**Streamer Contract name**_ |     | _**Type**_ | _**Length**_ | _**Description**_ |
 | --- | --- | --- | --- | --- |
 | service |     | String | Variable | SCREENER\_EQUITY, SCREENER\_OPTION |
@@ -922,14 +936,13 @@ _**1\. Screener Common**_
 **Response field definitions**
 
 | _**Index**_ | _**Field**_ | _**Type**_ | _**Description**_ | _**Values**_ |
+| --- | --- | --- | --- | ----|
 | 0   | symbol | String | The symbol used to look up either actives, gainers or losers | Subscribed or requested symbol |
 | 1   | timestamp | long | Market snapshot timestamp in milliseconds since Epoch | 12345613123 |
 | 2   | sortField | String | Field to sort on | VOLUME, TRADES, PERCENT\_CHANGE\_UP, PERCENT\_CHANGE\_DOWN, AVERAGE\_PERCENT\_VOLUME |
 | 3   | frequency | Integer | Frequency of data to sort | 0, 1, 5, 10, 30 60 minutes (0 is for all day) |
 | 4   | Items | Array |     | Refer to the field table below |
 
-  
- 
 
 | _**Field**_ | _**Type**_ | _**Description**_ |
 | --- | --- | --- |
@@ -943,16 +956,12 @@ _**1\. Screener Common**_
 | trades | long | Number of trades for the frequency requested |
 | volume | long | Volume for the frequency requested |
 
-  
- 
 
 ## 7\. ACCOUNT services
 
 _**1\. ACCT\_ACTIVITY**_  
- 
 
-**Account Activity Request for Streamer**  
- 
+**Account Activity Request for Streamer**   
 
 | _**Streamer Contract name**_ |     | _**Type**_ | _**Length**_ | _**Description**_ |
 | --- | --- | --- | --- | --- |
@@ -965,6 +974,10 @@ _**1\. ACCT\_ACTIVITY**_
 | fields | String | Variable | "0" expected |
 
 **Example:**  
+<details>
+<summary>ACCT_ACTIVITY Request Example</summary>
+
+```json
 {  
  "requests": \[  
   {  
@@ -979,11 +992,11 @@ _**1\. ACCT\_ACTIVITY**_
    }  
   }  
  \]  
-}  
- 
+}
+```
+</details>
 
 _**Response**_  
- 
 
 | _**Fields**_ | _**Field Name**_ | _**Type**_ | _**Value**_ |
 | --- | --- | --- | --- |

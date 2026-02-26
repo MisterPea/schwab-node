@@ -18,7 +18,7 @@ type CertGenerationParams = {
 
 function getArgValue(name: string): string | null {
   const args = process.argv.slice(2);
-  const idx = args.findIndex((arg) => arg === name);
+  const idx = args.indexOf(name);
   if (idx === -1) return null;
   return args[idx + 1] ?? null;
 }
@@ -45,7 +45,7 @@ async function readRedirectUriFromEnvFile(projectRoot: string): Promise<string |
 }
 
 function validateCallbackUrl(callbackUrl: string): ValidationResult {
-  let parsed;
+  let parsed: URL;
   try {
     parsed = new URL(callbackUrl);
   } catch {

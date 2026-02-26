@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { createGetRequest } from "../src/marketData/request.js";
+import { createGetRequest } from "../src/scripts/request.js";
 
 describe("createGetRequest", () => {
   afterEach(() => {
@@ -46,7 +46,31 @@ describe("createGetRequest", () => {
 
     const getRequest = createGetRequest(authProvider);
     await expect(getRequest("https://example.test/forbidden")).rejects.toThrow(
-      "HTTP 403: not allowed",
+      "HTTP 403: -not allowed",
+    );
+  });
+
+  test("formats non-2xx errors with response url when available", async () => {
+    const authProvider = {
+      getAuth: vi.fn().mockResolvedValue({
+        access_token: "abc123",
+        token_type: "Bearer",
+      }),
+    };
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 418,
+        url: "https://example.test/teapot",
+        text: vi.fn().mockResolvedValue("short and stout"),
+      } as unknown as Response),
+    );
+
+    const getRequest = createGetRequest(authProvider);
+    await expect(getRequest("https://example.test/teapot")).rejects.toThrow(
+      "HTTP 418: https://example.test/teapot-short and stout",
     );
   });
 });

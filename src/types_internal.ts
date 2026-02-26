@@ -1,2 +1,0 @@
-import { ChartRequest, OptionChainReq, OptionExpirationReq, GetQuoteReq, MoversConfig } from './types.js';
-export type GetMarketDataConfig = ChartRequest | OptionChainReq | OptionExpirationReq | GetQuoteReq | MoversConfig;

@@ -1,5 +1,5 @@
 import { listenForAuthCode, tryOpenBrowser } from "./server.js";
-import { FileTokenStore, TokenSet } from "./tokenStore.js";
+import { FileTokenStore, type TokenSet } from "./tokenStore.js";
 
 export type SchwabAuthConfig = {
   clientId: string;

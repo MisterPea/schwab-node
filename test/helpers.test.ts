@@ -25,7 +25,8 @@ afterEach(() => {
 describe("helpers", () => {
   test("convertIsoStringToMs returns epoch milliseconds", () => {
     const ms = convertIsoStringToMs("2026-02-17");
-    expect(ms).toBe(new Date("2026-02-17").getTime());
+    expect(typeof ms).toBe("string");
+    expect(ms).toBe(new Date("2026-02-17").getTime().toString());
   });
 
   test("addDays returns a YYYY-MM-DD date string", () => {

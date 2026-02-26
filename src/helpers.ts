@@ -1,12 +1,23 @@
-import { ISODate } from "./types.js";
-import { GetMarketDataConfig } from "./types_internal.js";
 import { URL } from 'node:url';
+import type { OptionChainRequest } from './derivatives/get-option-chain/schema.js';
+import type { OptionExpirationRequest } from './derivatives/get-option-expirations/schema.js';
+import type { GetMoversConfig, MoversConfig } from './market-data/get-movers/schema.js';
+import type { GetQuoteRequest } from './market-data/get-quote/schema.js';
+import type { GetPriceHistoryRequest } from './market-data/price-history/schema.js';
+
+type GetMarketDataConfig =
+  | GetPriceHistoryRequest
+  | OptionChainRequest
+  | OptionExpirationRequest
+  | GetQuoteRequest
+  | MoversConfig
+  | GetMoversConfig;
 
 export const MARKET_DATA_ROOT = "https://api.schwabapi.com/marketdata/v1";
 
-export function convertIsoStringToMs(isoString: ISODate): number {
+export function convertIsoStringToMs(isoString: string): string {
   const date = new Date(isoString);
-  return date.getTime();
+  return date.getTime().toString();
 }
 
 /**
@@ -18,7 +29,7 @@ export function addDays(d: number): string {
   const date = new Date();
   date.setDate(date.getDate() + d);
   const newDate = date.toISOString().split('T')[0];
-  return newDate;
+  return newDate.toString();
 }
 
 /**

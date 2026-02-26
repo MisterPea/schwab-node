@@ -5,6 +5,11 @@
     "ssid": 101,
     "symbol": "AAPL",
     "quote": {
+      "closePrice": 179.5,
+      "lastPrice": 180.15,
+      "netChange": 0.65,
+      "securityStatus": "Normal",
+      "tradeTime": 1760985600000,
       "bidPrice": 180.12,
       "askPrice": 180.18
     }

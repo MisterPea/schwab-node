@@ -1,4 +1,49 @@
 /* To run smoke test: RUN_LIVE_TESTS=1 npm run test:live:smoke */
-export * from './oauth/schwabAuth.js';
-export * from './market-data/index.js';
-export * from './derivatives/index.js';
+
+export * from "./account/index.js";
+export * from "./derivatives/index.js";
+export * from "./market-data/index.js";
+export * from "./oauth/schwabAuth.js";
+export type {
+  AtmOptionRtn,
+  ChartBase,
+  ChartRequest,
+  DailyFrequency,
+  DailyFrequencyType,
+  DayFrequencyType,
+  DayPeriod,
+  ExpDateMap,
+  ExpirationKey,
+  FrequencyFor,
+  GetAtmOptionReq,
+  GetOptionChainRtn,
+  GetQuoteReq,
+  GreekFilterReq,
+  GreekFilterRtn,
+  ISODate,
+  MinuteFrequency,
+  MinuteFrequencyType,
+  MonthFrequencyType,
+  MonthlyFrequency,
+  MonthlyFrequencyType,
+  MonthPeriod,
+  OptionChainReq,
+  OptionExpirationReq,
+  OptionExpirationRtn,
+  OptionSide,
+  OptionSideMaps,
+  PeriodType,
+  PriceHistoryRtnElement,
+  QuoteData,
+  QuoteRtn,
+  ScreenersResponseItem,
+  StrikeKey,
+  StrikeMap,
+  SymbolString,
+  WeeklyFrequency,
+  WeeklyFrequencyType,
+  YearFrequencyType,
+  YearPeriod,
+  YtdFrequencyType,
+  YtdPeriod,
+} from "./types.js";

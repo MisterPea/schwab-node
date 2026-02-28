@@ -14,6 +14,7 @@ type GetMarketDataConfig =
   | GetMoversConfig;
 
 export const MARKET_DATA_ROOT = "https://api.schwabapi.com/marketdata/v1";
+export const TRADER_DATA_ROOT = "https://api.schwabapi.com/trader/v1";
 
 export function convertIsoStringToMs(isoString: string): string {
   const date = new Date(isoString);
@@ -40,6 +41,24 @@ export function addDays(d: number): string {
  */
 export function constructMarketDataUrl(config: GetMarketDataConfig | null, endpoint: string): string {
   const url = new URL(`${MARKET_DATA_ROOT}${endpoint}`);
+
+  if (config) {
+    for (const [k, v] of Object.entries(config)) {
+      url.searchParams.set(k, `${v}`);
+    }
+  }
+  const reqUrl = url.toString();
+  return reqUrl;
+}
+
+/**
+ * Convenience function to construct traderData url with queries
+ * @param {Object} config Key/values pairs to include in the query 
+ * @param {string} endpoint Slash delineated link to the endpoint
+ * @returns {string} Endpoint with queries
+ */
+export function constructTraderDataUrl(config: GetMarketDataConfig | null, endpoint: string): string {
+  const url = new URL(`${TRADER_DATA_ROOT}${endpoint}`);
 
   if (config) {
     for (const [k, v] of Object.entries(config)) {

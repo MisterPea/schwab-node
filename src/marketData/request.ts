@@ -5,4 +5,4 @@ warnLegacyImportRoute(
   "@misterpea/schwab-node/scripts/request",
 );
 
-export { createGetRequest, getRequest } from "../scripts/request.js";
+export { createGetRequest, getRequest } from "../request/index.js";

@@ -1,5 +1,5 @@
 import { constructMarketDataUrl, convertIsoStringToMs } from "../../helpers.js";
-import { getRequest } from "../../scripts/request.js";
+import { getRequest } from "../../request/index.js";
 import { type GetPriceHistoryRequest, type GetPriceHistoryResponse, PriceHistoryQuerySchema, PriceHistoryResponseSchema } from "./schema.js";
 import * as z from 'zod';
 

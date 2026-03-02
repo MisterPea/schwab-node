@@ -1,5 +1,5 @@
 import { MARKET_DATA_ROOT } from "../../helpers.js";
-import { getRequest } from "../../scripts/request.js";
+import { getRequest } from "../../request/index.js";
 import { type GetMarketHoursConfig, GetMarketHoursSchema, MarketHoursNestedResponseSchema, MarketHoursResponseSchema, type MarketHoursRtn } from "./schema.js";
 
 /**

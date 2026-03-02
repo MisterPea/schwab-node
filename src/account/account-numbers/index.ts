@@ -1,5 +1,5 @@
 import { constructTraderDataUrl } from '../../helpers.js';
-import { getRequest } from '../../scripts/request.js';
+import { getRequest } from '../../request/index.js';
 import { UserAccountArraySchema, type UserAccountNumbers } from './schema.js';
 
 /**

@@ -1,5 +1,5 @@
 import { constructMarketDataUrl } from "../../helpers.js";
-import { getRequest } from "../../scripts/request.js";
+import { getRequest } from "../../request/index.js";
 import { type GetQuoteRequest, type GetQuotesResponse, GetQuotesResponseSchema } from "./schema.js";
 
 export async function getQuote(config: GetQuoteRequest): Promise<GetQuotesResponse> {

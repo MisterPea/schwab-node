@@ -1,5 +1,5 @@
 import { constructMarketDataUrl } from "../../helpers.js";
-import { getRequest } from "../../scripts/request.js";
+import { getRequest } from "../../request/index.js";
 import { type GetMoversConfig, GetMoversSchema, type MoversConfig, type ScreenersResponse, ScreenersResponseSchema } from "./schema.js";
 
 /**

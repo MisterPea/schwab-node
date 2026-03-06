@@ -1,4 +1,4 @@
-import * as z from 'zod';
+import * as z from "zod";
 
 const periodTypeEnum = z.enum(["day", "month", "year", "ytd"]);
 const frequencyTypeEnum = z.enum(["minute", "daily", "weekly", "monthly"]);
@@ -7,28 +7,26 @@ const isoDate = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Must be ISO date YYYY-MM-DD");
 
-export const PriceHistoryQuerySchema = z.object({
-  symbol: z.string().min(1, "symbol is required"),
+export const PriceHistoryQuerySchema = z
+  .object({
+    symbol: z.string().min(1, "symbol is required"),
 
-  periodType: periodTypeEnum.optional(),
-  period: z.number().int().optional(),
+    periodType: periodTypeEnum.optional(),
+    period: z.number().int().optional(),
 
-  frequencyType: frequencyTypeEnum.optional(),
-  frequency: z.number().int().optional(),
+    frequencyType: frequencyTypeEnum.optional(),
+    frequency: z.number().int().optional(),
 
-  startDate: isoDate.optional(),
-  endDate: isoDate.optional(),
+    startDate: isoDate.optional(),
+    endDate: isoDate.optional(),
 
-  needExtendedHoursData: z.boolean().optional(),
-  needPreviousClose: z.boolean().optional(),
-})
+    needExtendedHoursData: z.boolean().optional(),
+    needPreviousClose: z.boolean().optional(),
+  })
   .superRefine((data, ctx) => {
     // ---- period validation ----
     if (data.periodType && data.period !== undefined) {
-      const validPeriods: Record<
-        z.infer<typeof periodTypeEnum>,
-        number[]
-      > = {
+      const validPeriods: Record<z.infer<typeof periodTypeEnum>, number[]> = {
         day: [1, 2, 3, 4, 5, 10],
         month: [1, 2, 3, 6],
         year: [1, 2, 3, 5, 10, 15, 20],
@@ -108,14 +106,16 @@ export const PriceHistorySlice = z.object({
   low: z.number(),
   close: z.number(),
   volume: z.number(),
-  datetime: z.number()
+  datetime: z.number(),
 });
 
 export const PriceHistoryResponseSchema = z.object({
   symbol: z.string(),
   empty: z.boolean(),
-  candles: z.array(PriceHistorySlice.optional())
+  candles: z.array(PriceHistorySlice.optional()),
 });
 
-export type GetPriceHistoryResponse = z.infer<typeof PriceHistoryResponseSchema>;
+export type GetPriceHistoryResponse = z.infer<
+  typeof PriceHistoryResponseSchema
+>;
 export type GetPriceHistoryRequest = z.infer<typeof PriceHistoryQuerySchema>;

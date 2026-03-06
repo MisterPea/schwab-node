@@ -1,14 +1,16 @@
-import * as z from 'zod';
-import { constructMarketDataUrl } from '../../helpers.js';
-import { getRequest } from '../../request/index.js';
+import * as z from "zod";
+import { constructMarketDataUrl } from "../../helpers.js";
+import { getRequest } from "../../request/index.js";
 import {
   type GetOptionChainReturn,
   GetOptionChainReturnSchema,
   type OptionChainRequest,
   OptionChainRequestSchema,
-} from './schema.js';
+} from "./schema.js";
 
-export async function getOptionChain(config: OptionChainRequest): Promise<GetOptionChainReturn | undefined> {
+export async function getOptionChain(
+  config: OptionChainRequest,
+): Promise<GetOptionChainReturn | undefined> {
   const result = OptionChainRequestSchema.safeParse(config);
 
   if (!result.success) {
@@ -16,7 +18,7 @@ export async function getOptionChain(config: OptionChainRequest): Promise<GetOpt
     return;
   }
 
-  const url = constructMarketDataUrl(config, '/chains');
+  const url = constructMarketDataUrl(config, "/chains");
   const res = await getRequest(url);
   const json = await res.json();
   return GetOptionChainReturnSchema.parse(json);

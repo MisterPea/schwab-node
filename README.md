@@ -319,6 +319,138 @@ Token shape:
 }
 ```
 
+## Streaming
+
+The websocket streamer exposes two layers:
+
+- Raw protocol methods such as `subs`, `add`, `view`, and `unsubs` still accept Schwab field ids like `"0"` and `"10"`.
+- Service-specific helpers for `LEVELONE_EQUITIES`, `LEVELONE_OPTIONS`, `LEVELONE_FUTURES`, `LEVELONE_FUTURES_OPTIONS`, and `LEVELONE_FOREX` accept semantic field names like `symbol` and `quoteTime`.
+- Level 2 book helpers use `L2` naming: `subsL2NyseBook`, `subsL2NasdaqBook`, and `subsL2OptionsBook`.
+- Chart helpers use `subsChartEquity` and `subsChartFutures`, screener helpers use `subsScreenerEquity` and `subsScreenerOption`, and account activity uses `subsAcctActivity`.
+
+Raw usage:
+
+```typescript
+import { SchwabStreamer } from "@misterpea/schwab-node";
+
+const streamer = new SchwabStreamer();
+
+await streamer.connect();
+await streamer.login();
+
+await streamer.subs({
+  service: "LEVELONE_FUTURES",
+  keys: ["/ESH26"],
+  fields: ["0", "1", "2", "3", "8", "10"],
+});
+```
+
+Semantic futures usage:
+
+```typescript
+import {
+  LEVELONE_FUTURES_FIELDS,
+  SchwabStreamer,
+} from "@misterpea/schwab-node";
+
+const streamer = new SchwabStreamer();
+
+await streamer.connect();
+await streamer.login();
+
+await streamer.subsL1Futures({
+  keys: ["/ESH26"],
+  fields: [
+    "symbol",
+    "bidPrice",
+    "askPrice",
+    "lastPrice",
+    "totalVolume",
+    "quoteTime",
+  ],
+});
+
+console.log(LEVELONE_FUTURES_FIELDS["10"]); // "quoteTime"
+```
+
+Semantic equities usage:
+
+```typescript
+await streamer.subsL1Equities({
+  keys: ["AAPL"],
+  fields: ["symbol", "bidPrice", "askPrice", "lastPrice", "quoteTime"],
+});
+```
+
+Semantic options usage:
+
+```typescript
+await streamer.subsL1Options({
+  keys: ["AAPL  251219C00200000"],
+  fields: ["symbol", "bidPrice", "askPrice", "lastPrice", "quoteTime"],
+});
+```
+
+Semantic futures options usage:
+
+```typescript
+await streamer.subsL1FuturesOptions({
+  keys: ["./OZCZ23C565"],
+  fields: ["symbol", "bidPrice", "askPrice", "lastPrice", "quoteTime"],
+});
+```
+
+Semantic forex usage:
+
+```typescript
+await streamer.subsL1Forex({
+  keys: ["EUR/USD"],
+  fields: ["symbol", "bidPrice", "askPrice", "lastPrice", "quoteTime"],
+});
+```
+
+Level 2 NYSE book usage:
+
+```typescript
+await streamer.subsL2NyseBook({
+  keys: ["JPM"],
+  fields: ["symbol", "marketSnapshotTime", "bidSideLevels", "askSideLevels"],
+});
+```
+
+`NASDAQ_BOOK` and `OPTIONS_BOOK` use the same top-level field names through `subsL2NasdaqBook` and `subsL2OptionsBook`.
+
+Chart equity usage:
+
+```typescript
+await streamer.subsChartEquity({
+  keys: ["AAPL"],
+  fields: ["symbol", "openPrice", "highPrice", "lowPrice", "closePrice", "volume", "chartTime"],
+});
+```
+
+Screener equity usage:
+
+```typescript
+await streamer.subsScreenerEquity({
+  keys: ["NYSE_VOLUME_0"],
+  fields: ["symbol", "timestamp", "sortField", "frequency", "items"],
+});
+```
+
+Account activity usage:
+
+```typescript
+await streamer.subsAcctActivity({
+  keys: ["CLIENT_KEY"],
+  fields: ["subscriptionKey"],
+});
+```
+
+For book payload adapters, the package also exports `BOOK_FIELDS`, `BOOK_PRICE_LEVEL_FIELDS`, and `BOOK_MARKET_MAKER_FIELDS` so the nested Level 2 structure can be resolved without hard-coding field positions.
+
+The exported `CHART_EQUITY_FIELDS`, `CHART_FUTURES_FIELDS`, `SCREENER_FIELDS`, `ACCT_ACTIVITY_FIELDS`, the Level 1 field maps, their inverse maps, and the resolver helpers can also be reused when you build adapters on top of the raw streamer payloads.
+
 ## Feedback & Requests
 
 Found a bug or have a feature request?  
@@ -336,6 +468,3 @@ AI tooling (OpenAI Codex) was used as a development assistant for:
 All core architecture, implementation, and final code decisions were written and reviewed by the project author.
 
 ***
-
-> [!NOTE]
-> Roadmap: We are in the process of implementing streaming quotes as part of this package - hang tight!

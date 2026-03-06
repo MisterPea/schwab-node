@@ -1,4 +1,4 @@
-import * as z from 'zod';
+import * as z from "zod";
 
 export type GetAtmOptionReq = {
   symbol: string;
@@ -11,9 +11,12 @@ export const GetAtmOptionRequestSchema = z.object({
 });
 
 export const OptionReturnSchema = z.object({
-  put_call: z.enum(['PUT', 'CALL']),
-  day_of_expiry: z.enum(['SUN', 'MON', 'TUE', 'WED', 'THR', 'FRI', 'SAT']),
+  put_call: z.enum(["PUT", "CALL"]),
+  day_of_expiry: z.enum(["SUN", "MON", "TUE", "WED", "THR", "FRI", "SAT"]),
   underlying: z.string(),
+  bid: z.number(),
+  ask: z.number(),
+  bidAskSpreadPct: z.number(),
   open_interest: z.number(),
   total_volume: z.number(),
   symbol: z.string(),

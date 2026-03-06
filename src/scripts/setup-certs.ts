@@ -7,8 +7,8 @@ import process from "node:process";
 import readline from "node:readline/promises";
 
 type ValidationResult =
-  | { ok: true; parsed: URL; }
-  | { ok: false; reason: string; };
+  | { ok: true; parsed: URL }
+  | { ok: false; reason: string };
 
 type CertGenerationParams = {
   hostname: string;
@@ -31,7 +31,9 @@ function resolveProjectRoot(): string {
   return process.env.INIT_CWD || process.cwd();
 }
 
-async function readRedirectUriFromEnvFile(projectRoot: string): Promise<string | null> {
+async function readRedirectUriFromEnvFile(
+  projectRoot: string,
+): Promise<string | null> {
   const envPath = join(projectRoot, ".env");
   if (!existsSync(envPath)) return null;
 
@@ -41,7 +43,10 @@ async function readRedirectUriFromEnvFile(projectRoot: string): Promise<string |
     .map((v) => v.trim())
     .find((v) => v.startsWith("SCHWAB_REDIRECT_URI="));
   if (!line) return null;
-  return line.slice("SCHWAB_REDIRECT_URI=".length).replace(/^["']|["']$/g, "") || null;
+  return (
+    line.slice("SCHWAB_REDIRECT_URI=".length).replace(/^["']|["']$/g, "") ||
+    null
+  );
 }
 
 function validateCallbackUrl(callbackUrl: string): ValidationResult {
@@ -76,7 +81,11 @@ async function promptForCallbackUrl() {
     output: process.stdout,
   });
   try {
-    return (await rl.question("Enter Schwab callback URL (https://127.0.0.1:PORT/path): ")).trim();
+    return (
+      await rl.question(
+        "Enter Schwab callback URL (https://127.0.0.1:PORT/path): ",
+      )
+    ).trim();
   } finally {
     rl.close();
   }
@@ -92,7 +101,11 @@ function ensureMkcertAvailable(): boolean {
   return check.status === 0;
 }
 
-function generateCertsWithOpenSsl({ hostname, certPath, keyPath }: CertGenerationParams): void {
+function generateCertsWithOpenSsl({
+  hostname,
+  certPath,
+  keyPath,
+}: CertGenerationParams): void {
   const sanValue = "DNS:localhost,IP:127.0.0.1";
   const args = [
     "req",
@@ -113,13 +126,21 @@ function generateCertsWithOpenSsl({ hostname, certPath, keyPath }: CertGeneratio
     `subjectAltName=${sanValue}`,
   ];
 
-  const result = spawnSync("openssl", args, { stdio: "pipe", encoding: "utf8" });
+  const result = spawnSync("openssl", args, {
+    stdio: "pipe",
+    encoding: "utf8",
+  });
   if (result.status !== 0) {
-    throw new Error(result.stderr || "OpenSSL failed to generate certificates.");
+    throw new Error(
+      result.stderr || "OpenSSL failed to generate certificates.",
+    );
   }
 }
 
-function generateCertsWithMkcert({ certPath, keyPath }: CertGenerationParams): void {
+function generateCertsWithMkcert({
+  certPath,
+  keyPath,
+}: CertGenerationParams): void {
   const args = [
     "-cert-file",
     certPath,
@@ -130,11 +151,18 @@ function generateCertsWithMkcert({ certPath, keyPath }: CertGenerationParams): v
   ];
   const result = spawnSync("mkcert", args, { stdio: "pipe", encoding: "utf8" });
   if (result.status !== 0) {
-    throw new Error(result.stderr || result.stdout || "mkcert failed to generate certificates.");
+    throw new Error(
+      result.stderr ||
+        result.stdout ||
+        "mkcert failed to generate certificates.",
+    );
   }
 }
 
-async function writeCallbackFile(projectRoot: string, callbackUrl: string): Promise<void> {
+async function writeCallbackFile(
+  projectRoot: string,
+  callbackUrl: string,
+): Promise<void> {
   const callbackPath = join(projectRoot, ".secrets", "callback-url");
   await mkdir(dirname(callbackPath), { recursive: true });
   await writeFile(callbackPath, `${callbackUrl}\n`, "utf8");
@@ -170,7 +198,9 @@ async function run() {
   let callbackUrl = getArgValue("--callback");
 
   if (!callbackUrl) {
-    callbackUrl = process.env.SCHWAB_REDIRECT_URI || (await readRedirectUriFromEnvFile(projectRoot));
+    callbackUrl =
+      process.env.SCHWAB_REDIRECT_URI ||
+      (await readRedirectUriFromEnvFile(projectRoot));
   }
 
   if (!callbackUrl && process.stdin.isTTY) {
@@ -178,8 +208,12 @@ async function run() {
   }
 
   if (!callbackUrl) {
-    console.info("[schwab-node] Skipping cert setup: no callback URL provided.");
-    console.info("[schwab-node] To install certificates, run: npx schwab-node-certs");
+    console.info(
+      "[schwab-node] Skipping cert setup: no callback URL provided.",
+    );
+    console.info(
+      "[schwab-node] To install certificates, run: npx schwab-node-certs",
+    );
     return;
   }
 
@@ -212,7 +246,9 @@ async function run() {
     console.info("[schwab-node] Generated trusted local certs with mkcert.");
   } else {
     if (!ensureOpenSslAvailable()) {
-      throw new Error("[schwab-node] Either mkcert or OpenSSL is required to generate certificates.");
+      throw new Error(
+        "[schwab-node] Either mkcert or OpenSSL is required to generate certificates.",
+      );
     }
 
     generateCertsWithOpenSsl({
@@ -220,13 +256,19 @@ async function run() {
       certPath,
       keyPath,
     });
-    console.info("[schwab-node] mkcert not found; generated self-signed certs with OpenSSL.");
+    console.info(
+      "[schwab-node] mkcert not found; generated self-signed certs with OpenSSL.",
+    );
   }
 
   await writeCallbackFile(projectRoot, callbackUrl);
   console.info(`\x1b[32m \n[schwab-node] Generated certs at ${certsDir}`);
-  console.info(`[schwab-node] Callback URL saved to ${join(projectRoot, ".secrets", "callback-url")}`);
-  console.info(`\n[schwab-node] Be sure to add a .env file in your project root with your SCHWAB_CLIENT_SECRET, SCHWAB_CLIENT_ID, and SCHWAB_REDIRECT_URI \n  \x1b[0m`);
+  console.info(
+    `[schwab-node] Callback URL saved to ${join(projectRoot, ".secrets", "callback-url")}`,
+  );
+  console.info(
+    `\n[schwab-node] Be sure to add a .env file in your project root with your SCHWAB_CLIENT_SECRET, SCHWAB_CLIENT_ID, and SCHWAB_REDIRECT_URI \n  \x1b[0m`,
+  );
 }
 
 run().catch((err) => {

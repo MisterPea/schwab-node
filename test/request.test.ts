@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
-import { createGetRequest } from "../src/scripts/request.js";
+import { createGetRequest } from "../src/request/index.js";
 
 describe("createGetRequest", () => {
   afterEach(() => {
@@ -15,7 +15,9 @@ describe("createGetRequest", () => {
       }),
     };
 
-    const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(new Response("{}", { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
 
     const getRequest = createGetRequest(authProvider);

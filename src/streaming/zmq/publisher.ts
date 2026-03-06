@@ -1,7 +1,8 @@
-import { Publisher } from 'zeromq';
+import { Publisher } from "zeromq";
 
-export async function createPublisher(address = 'tcp://*:5555') {
+export async function createPublisher(address = "tcp://*:5555") {
   const sock = new Publisher();
+  sock.linger = 0;
   await sock.bind(address);
   console.info(`Publisher bound to ${address}`);
 

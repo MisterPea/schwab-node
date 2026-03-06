@@ -6,7 +6,7 @@ const { mockGetRequest } = vi.hoisted(() => ({
   mockGetRequest: vi.fn(),
 }));
 
-vi.mock("../src/scripts/request.js", () => ({
+vi.mock("../src/request/index.js", () => ({
   getRequest: mockGetRequest,
 }));
 
@@ -66,7 +66,9 @@ describe("quotes contract", () => {
     );
 
     const result = await getQuote({ symbols: "AAPL", fields: "quote" });
-    expect((result.AAPL as Record<string, unknown>).vendorTag).toBe("fixture-extra");
+    expect((result.AAPL as Record<string, unknown>).vendorTag).toBe(
+      "fixture-extra",
+    );
   });
 
   test("rejects malformed quote payload with a zod validation error", async () => {

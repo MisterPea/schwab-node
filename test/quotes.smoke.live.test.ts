@@ -9,15 +9,11 @@ const runLive = process.env.RUN_LIVE_TESTS === "1" && hasTokenFile;
 const liveDescribe = runLive ? describe : describe.skip;
 
 liveDescribe("quotes live smoke", () => {
-  test(
-    "fetches live quote for AAPL",
-    { timeout: 20_000 },
-    async () => {
-      const result = await getQuote({ symbols: "AAPL", fields: "quote" });
-      expect(Object.keys(result).length).toBeGreaterThan(0);
-      expect(result.AAPL.symbol).toBe("AAPL");
-      expect(typeof result.AAPL.quote?.bidPrice).toBe("number");
-      expect(typeof result.AAPL.quote?.askPrice).toBe("number");
-    },
-  );
+  test("fetches live quote for AAPL", { timeout: 20_000 }, async () => {
+    const result = await getQuote({ symbols: "AAPL", fields: "quote" });
+    expect(Object.keys(result).length).toBeGreaterThan(0);
+    expect(result.AAPL.symbol).toBe("AAPL");
+    expect(typeof result.AAPL.quote?.bidPrice).toBe("number");
+    expect(typeof result.AAPL.quote?.askPrice).toBe("number");
+  });
 });

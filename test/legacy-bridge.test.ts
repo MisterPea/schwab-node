@@ -5,7 +5,7 @@ const { mockGetRequest } = vi.hoisted(() => ({
   mockGetRequest: vi.fn(),
 }));
 
-vi.mock("../src/scripts/request.js", () => ({
+vi.mock("../src/request/index.js", () => ({
   createGetRequest: vi.fn(),
   getRequest: mockGetRequest,
 }));

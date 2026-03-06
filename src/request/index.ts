@@ -1,4 +1,4 @@
-import { getDefaultAuth } from '../oauth/defaultAuth.js';
+import { getDefaultAuth } from "../oauth/defaultAuth.js";
 
 type AuthToken = {
   access_token: string;
@@ -36,16 +36,19 @@ async function waitForRateLimitSlot(): Promise<void> {
   await slot;
 }
 
-async function performRequest(url: string, authProvider: AuthProvider): Promise<Response> {
+async function performRequest(
+  url: string,
+  authProvider: AuthProvider,
+): Promise<Response> {
   await waitForRateLimitSlot();
   const { access_token, token_type } = await authProvider.getAuth();
 
   const reqHeaders = new Headers();
-  reqHeaders.append('accept', 'application/json');
-  reqHeaders.append('Authorization', `${token_type} ${access_token}`);
+  reqHeaders.append("accept", "application/json");
+  reqHeaders.append("Authorization", `${token_type} ${access_token}`);
 
   const res = await fetch(url, {
-    method: 'GET',
+    method: "GET",
     headers: reqHeaders,
   });
 

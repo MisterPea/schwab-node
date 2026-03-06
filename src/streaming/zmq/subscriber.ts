@@ -1,6 +1,9 @@
-import { Subscriber } from 'zeromq';
+import { Subscriber } from "zeromq";
 
-export async function createSubscriber(address = 'tcp://localhost:5555', topics = ['schwab']) {
+export async function createSubscriber(
+  address = "tcp://localhost:5555",
+  topics = ["schwab"],
+) {
   const sock = new Subscriber();
   sock.connect(address);
 
@@ -8,7 +11,7 @@ export async function createSubscriber(address = 'tcp://localhost:5555', topics 
     sock.subscribe(topic);
   }
 
-  console.info(`Subscribed to ${topics.join(', ')} on ${address}`);
+  console.info(`Subscribed to ${topics.join(", ")} on ${address}`);
   return sock;
 }
 

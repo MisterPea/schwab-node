@@ -47,8 +47,10 @@ describe("helpers", () => {
   });
 
   test("readableStreamToObject parses multiple JSON objects split across chunks", async () => {
-    const stream = streamFromChunks(['{"a":1}', '{"b"', ':2}']);
-    const objects = await readableStreamToObject<{ a?: number; b?: number }>(stream);
+    const stream = streamFromChunks(['{"a":1}', '{"b"', ":2}"]);
+    const objects = await readableStreamToObject<{ a?: number; b?: number }>(
+      stream,
+    );
     expect(objects).toEqual([{ a: 1 }, { b: 2 }]);
   });
 

@@ -1,19 +1,19 @@
-import { mkdir, readFile, writeFile, rename } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import { mkdir, readFile, writeFile, rename } from "node:fs/promises";
+import { dirname } from "node:path";
 
 export type TokenSet = {
   access_token: string;
   refresh_token: string;
-  refresh_obtained_at: number; 
+  refresh_obtained_at: number;
   token_type: "Bearer";
-  expires_in: number;         // seconds 
+  expires_in: number; // seconds
   id_token?: string;
-  obtained_at: number;        // epoch ms
+  obtained_at: number; // epoch ms
   scope?: string;
 };
 
 export class FileTokenStore {
-  constructor(private filePath: string) { }
+  constructor(private filePath: string) {}
 
   async load(): Promise<TokenSet | null> {
     try {

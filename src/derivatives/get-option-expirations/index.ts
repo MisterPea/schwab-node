@@ -1,14 +1,16 @@
-import * as z from 'zod';
-import { constructMarketDataUrl } from '../../helpers.js';
-import { getRequest } from '../../request/index.js';
+import * as z from "zod";
+import { constructMarketDataUrl } from "../../helpers.js";
+import { getRequest } from "../../request/index.js";
 import {
   type OptionExpirationRequest,
   OptionExpirationRequestSchema,
   type OptionExpirationReturn,
   OptionExpirationReturnSchema,
-} from './schema.js';
+} from "./schema.js";
 
-export async function getOptionExpirations(config: OptionExpirationRequest): Promise<OptionExpirationReturn | undefined> {
+export async function getOptionExpirations(
+  config: OptionExpirationRequest,
+): Promise<OptionExpirationReturn | undefined> {
   const result = OptionExpirationRequestSchema.safeParse(config);
 
   if (!result.success) {
@@ -16,7 +18,7 @@ export async function getOptionExpirations(config: OptionExpirationRequest): Pro
     return;
   }
 
-  const url = constructMarketDataUrl(config, '/expirationchain');
+  const url = constructMarketDataUrl(config, "/expirationchain");
   const res = await getRequest(url);
   const json = await res.json();
   const { expirationList } = json;

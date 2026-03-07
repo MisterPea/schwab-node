@@ -41,6 +41,16 @@ describe("quotes contract", () => {
     expect(result.AAPL.quote?.bidPrice).toBe(180.12);
   });
 
+  test("accepts symbol arrays and normalizes them into query params", async () => {
+    const payload = await fixture("quotes.valid.json");
+    mockGetRequest.mockResolvedValueOnce(jsonResponse(payload));
+
+    await getQuote({ symbols: ["AAPL", "NVDA"], fields: "quote" });
+
+    expect(mockGetRequest).toHaveBeenCalledTimes(1);
+    expect(mockGetRequest.mock.calls[0][0]).toContain("symbols=AAPL%2CNVDA");
+  });
+
   test("allows extra top-level fields in quote envelopes", async () => {
     mockGetRequest.mockResolvedValueOnce(
       jsonResponse(

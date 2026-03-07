@@ -2,7 +2,7 @@ import * as z from "zod";
 import { addDays } from "../../helpers.js";
 import { getOptionChain } from "../get-option-chain/index.js";
 import type {
-  OptionChainRequest,
+  GetOptionChainRequest,
   OptionQuote,
 } from "../get-option-chain/schema.js";
 import {
@@ -32,7 +32,7 @@ export async function greekFilter(
   const minWindow = addDays(Math.min(...window));
   const greekArray = Object.keys(greek);
 
-  const optionConfig: OptionChainRequest = {
+  const optionConfig: GetOptionChainRequest = {
     symbol,
     fromDate: minWindow,
     toDate: maxWindow,

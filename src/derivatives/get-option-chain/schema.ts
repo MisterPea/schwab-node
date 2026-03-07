@@ -51,7 +51,7 @@ export const ISODateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, "Expected ISO date format YYYY-MM-DD");
 
-export const OptionChainRequestSchema = z.object({
+export const GetOptionChainRequestSchema = z.object({
   symbol: z.string().min(1),
   contractType: ContractTypeSchema.optional(),
   strikeCount: z.number().int().nonnegative().optional(),
@@ -71,7 +71,7 @@ export const OptionChainRequestSchema = z.object({
   entitlement: EntitlementSchema.optional(),
 });
 
-export type OptionChainRequest = z.infer<typeof OptionChainRequestSchema>;
+export type GetOptionChainRequest = z.infer<typeof GetOptionChainRequestSchema>;
 
 export const OptionDeliverableSchema = z
   .object({
@@ -121,7 +121,7 @@ export const OptionQuoteSchema = z.object({
   strikePrice: z.number(),
   expirationDate: z.string(),
   daysToExpiration: z.number(),
-  expirationType: z.enum(["W", "M", "Q", "R"]),
+  expirationType: z.enum(["W", "M", "Q", "S"]),
   lastTradingDay: z.number(),
   multiplier: z.number(),
   settlementType: z.enum(["P", "C"]),

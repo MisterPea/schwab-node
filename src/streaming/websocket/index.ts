@@ -448,6 +448,7 @@ export class SchwabStreamer {
 
   private readonly publisherAddress: string;
   private readonly topicPrefix: string;
+  private readonly useAdapter: boolean;
   private context: StreamerContext | null = null;
   private requestCounter = 0;
   private commandChain: Promise<void> = Promise.resolve();
@@ -460,14 +461,19 @@ export class SchwabStreamer {
 
   /**
    * Creates a streamer instance with optional ZMQ publishing configuration.
-   * @param {{ publisherAddress?: string; topicPrefix?: string; }} [options] Optional publisher address and topic prefix overrides.
+   * @param {{ publisherAddress?: string; topicPrefix?: string; useAdapter?: boolean; }} [options] Optional publisher address, topic prefix, and adapter usage overrides.
    */
   constructor(
-    options: { publisherAddress?: string; topicPrefix?: string } = {},
+    options: {
+      publisherAddress?: string;
+      topicPrefix?: string;
+      useAdapter?: boolean;
+    } = {},
   ) {
     this.publisherAddress =
       options.publisherAddress ?? DEFAULT_PUBLISHER_ADDRESS;
     this.topicPrefix = options.topicPrefix ?? DEFAULT_TOPIC_PREFIX;
+    this.useAdapter = options.useAdapter ?? true;
   }
 
   /**
@@ -1283,7 +1289,11 @@ export class SchwabStreamer {
       payload: entry.payload,
     };
 
-    await publish(this.publisher, this.topicFor(entry), adapter(message));
+    await publish(
+      this.publisher,
+      this.topicFor(entry),
+      this.useAdapter ? adapter(message) : message,
+    );
   }
 
   /**

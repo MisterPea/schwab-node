@@ -1,7 +1,7 @@
 import * as z from "zod";
 
 export const GetQuoteSchema = z.object({
-  symbols: z.string(),
+  symbols: z.union([z.string(), z.array(z.string())]),
   fields: z
     .union([
       z.literal("quote"),

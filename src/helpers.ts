@@ -1,5 +1,5 @@
 import { URL } from "node:url";
-import type { OptionChainRequest } from "./derivatives/get-option-chain/schema.js";
+import type { GetOptionChainRequest } from "./derivatives/get-option-chain/schema.js";
 import type { OptionExpirationRequest } from "./derivatives/get-option-expirations/schema.js";
 import type {
   GetMoversConfig,
@@ -10,7 +10,7 @@ import type { GetPriceHistoryRequest } from "./market-data/price-history/schema.
 
 type GetMarketDataConfig =
   | GetPriceHistoryRequest
-  | OptionChainRequest
+  | GetOptionChainRequest
   | OptionExpirationRequest
   | GetQuoteRequest
   | MoversConfig

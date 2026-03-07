@@ -4,14 +4,14 @@ import { getRequest } from "../../request/index.js";
 import {
   type GetOptionChainReturn,
   GetOptionChainReturnSchema,
-  type OptionChainRequest,
-  OptionChainRequestSchema,
+  type GetOptionChainRequest,
+  GetOptionChainRequestSchema,
 } from "./schema.js";
 
 export async function getOptionChain(
-  config: OptionChainRequest,
+  config: GetOptionChainRequest,
 ): Promise<GetOptionChainReturn | undefined> {
-  const result = OptionChainRequestSchema.safeParse(config);
+  const result = GetOptionChainRequestSchema.safeParse(config);
 
   if (!result.success) {
     console.error(JSON.stringify(z.treeifyError(result.error), undefined, 1));

@@ -1,6 +1,6 @@
 {
   "name": "@misterpea/schwab-node",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "author": "Perry Angelora <perry.angelora@gmail.com>",
   "repository": {
@@ -145,6 +145,10 @@
     "./marketData/request": {
       "types": "./dist/marketData/request.d.ts",
       "import": "./dist/marketData/request.js"
+    },
+    "./streaming/zmq": {
+      "types": "./dist/streaming/zmq/index.d.ts",
+      "import": "./dist/streaming/zmq/index.js"
     }
   },
   "files": [

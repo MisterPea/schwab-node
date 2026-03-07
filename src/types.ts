@@ -241,7 +241,7 @@ export type GetAtmOptionReq = {
 };
 type Fields = "quote" | "fundamental";
 export type GetQuoteReq = {
-  symbols: string;
+  symbols: string | string[];
   fields?: Fields | `${Fields}, ${Fields}`;
   indicative?: boolean;
 };

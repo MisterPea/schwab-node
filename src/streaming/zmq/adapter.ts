@@ -1,4 +1,3 @@
-
 import type { PublishedMessage, StreamService } from "../websocket/schema.js";
 import {
   ACCT_ACTIVITY_FIELDS,
@@ -119,6 +118,7 @@ function remapContent(service: StreamService, content: unknown): unknown {
 }
 
 /**
+ * Trunk function for Adapter. 
  * Adapts streamer `data` messages by remapping numeric field keys to semantic names.
  */
 export function adapter(rawData: unknown): unknown {

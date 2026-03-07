@@ -1,12 +1,11 @@
-import { s_sub } from "./scripts/streaming-subscriber.js";
-import { s_web } from "./scripts/streaming-websocket.js";
-
 /* To run smoke test: RUN_LIVE_TESTS=1 npm run test:live:smoke */
 export * from "./account/index.js";
 export * from "./derivatives/index.js";
 export * from "./market-data/index.js";
 export * from "./oauth/schwabAuth.js";
 export { SchwabStreamer } from "./streaming/websocket/index.js";
+export { createSubscriber, listen } from "./streaming/zmq/index.js";
+export * as zmq from "./streaming/zmq/index.js";
 export type {
   AcctActivityFieldId,
   AcctActivityFieldName,
@@ -157,9 +156,3 @@ export type {
   YtdFrequencyType,
   YtdPeriod,
 } from "./types.js";
-
-(async function () {
-
-  s_sub();
-  await s_web();
-})();

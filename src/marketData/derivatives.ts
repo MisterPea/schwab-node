@@ -1,7 +1,7 @@
 import { getAtmOptionData as getAtmOptionDataCurrent } from "../derivatives/get-atm-option-data/index.js";
 import type { GetAtmOptionRequest } from "../derivatives/get-atm-option-data/schema.js";
 import { getOptionChain as getOptionChainCurrent } from "../derivatives/get-option-chain/index.js";
-import type { OptionChainRequest } from "../derivatives/get-option-chain/schema.js";
+import type { GetOptionChainRequest } from "../derivatives/get-option-chain/schema.js";
 import { getOptionExpirations as getOptionExpirationsCurrent } from "../derivatives/get-option-expirations/index.js";
 import type { OptionExpirationRequest } from "../derivatives/get-option-expirations/schema.js";
 import { greekFilter as greekFilterCurrent } from "../derivatives/greek-filter/index.js";
@@ -26,7 +26,7 @@ warnLegacyImportRoute(
 export async function getOptionChain(
   config: OptionChainReq,
 ): Promise<GetOptionChainRtn[]> {
-  const result = await getOptionChainCurrent(config as OptionChainRequest);
+  const result = await getOptionChainCurrent(config as GetOptionChainRequest);
   return result ? [result as GetOptionChainRtn] : [];
 }
 

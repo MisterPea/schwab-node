@@ -1,19 +1,21 @@
-import * as z from 'zod';
-import { getQuote } from '../../market-data/get-quote/index.js';
-import { getOptionChain } from '../get-option-chain/index.js';
-import type { OptionQuote } from '../get-option-chain/schema.js';
-import { getOptionExpirations } from '../get-option-expirations/index.js';
+import * as z from "zod";
+import { getQuote } from "../../market-data/get-quote/index.js";
+import { getOptionChain } from "../get-option-chain/index.js";
+import type { OptionQuote } from "../get-option-chain/schema.js";
+import { getOptionExpirations } from "../get-option-expirations/index.js";
 import {
   type GetAtmOptionRequest,
   GetAtmOptionRequestSchema,
   type GetAtmOptionReturn,
   type OptionReturn,
   OptionReturnArraySchema,
-} from './schema.js';
+} from "./schema.js";
 
-const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THR', 'FRI', 'SAT'] as const;
+const weekDays = ["SUN", "MON", "TUE", "WED", "THR", "FRI", "SAT"] as const;
 
-export async function getAtmOptionData(config: GetAtmOptionRequest): Promise<GetAtmOptionReturn | undefined> {
+export async function getAtmOptionData(
+  config: GetAtmOptionRequest,
+): Promise<GetAtmOptionReturn | undefined> {
   const result = GetAtmOptionRequestSchema.safeParse(config);
 
   if (!result.success) {
@@ -28,7 +30,10 @@ export async function getAtmOptionData(config: GetAtmOptionRequest): Promise<Get
 
   const dateStrings = expirations.flatMap((e) => {
     if (!e) return [];
-    if (e.daysToExpiration >= Math.min(...window) && e.daysToExpiration <= Math.max(...window)) {
+    if (
+      e.daysToExpiration >= Math.min(...window) &&
+      e.daysToExpiration <= Math.max(...window)
+    ) {
       return [e.expirationDate];
     }
     return [];
@@ -36,7 +41,7 @@ export async function getAtmOptionData(config: GetAtmOptionRequest): Promise<Get
 
   if (!dateStrings.length) return [];
 
-  const rtn = await getQuote({ symbols: symbol, fields: 'quote' });
+  const rtn = await getQuote({ symbols: symbol, fields: "quote" });
   const bid = rtn[symbol].quote?.bidPrice;
   const ask = rtn[symbol].quote?.askPrice;
   if (bid == null || ask == null) return [];
@@ -49,8 +54,12 @@ export async function getAtmOptionData(config: GetAtmOptionRequest): Promise<Get
   if (!strikes?.callExpDateMap && !strikes?.putExpDateMap) return [];
 
   const { callExpDateMap, putExpDateMap } = strikes;
-  const callDateKeys = Object.keys(callExpDateMap) as Array<keyof typeof callExpDateMap>;
-  const putDateKeys = Object.keys(putExpDateMap) as Array<keyof typeof putExpDateMap>;
+  const callDateKeys = Object.keys(callExpDateMap) as Array<
+    keyof typeof callExpDateMap
+  >;
+  const putDateKeys = Object.keys(putExpDateMap) as Array<
+    keyof typeof putExpDateMap
+  >;
 
   const optionData = [
     { dateKeys: callDateKeys, expirations: callExpDateMap },
@@ -68,6 +77,8 @@ export async function getAtmOptionData(config: GetAtmOptionRequest): Promise<Get
       const {
         putCall: put_call,
         symbol,
+        bid,
+        ask,
         strikePrice: strike_price,
         volatility,
         vega,
@@ -83,8 +94,13 @@ export async function getAtmOptionData(config: GetAtmOptionRequest): Promise<Get
 
       atmOptionInfo.push({
         put_call,
-        day_of_expiry: weekDays[(new Date().getDay() + dte) % 7] as OptionReturn['day_of_expiry'],
-        underlying: optionDeliverablesList[0].symbol || '',
+        day_of_expiry: weekDays[
+          (new Date().getDay() + dte) % 7
+        ] as OptionReturn["day_of_expiry"],
+        underlying: optionDeliverablesList[0].symbol || "",
+        bid,
+        ask,
+        bidAskSpreadPct: ((ask - bid) / bid) * 100,
         open_interest: openInterest,
         total_volume: totalVolume,
         symbol,
@@ -120,7 +136,9 @@ function binarySearch(target: number, searchArray: string[]) {
     }
   }
 
-  if (Math.abs(+searchArray[l] - target) < Math.abs(+searchArray[l - 1] - target)) {
+  if (
+    Math.abs(+searchArray[l] - target) < Math.abs(+searchArray[l - 1] - target)
+  ) {
     return searchArray[l];
   }
   return searchArray[l - 1];

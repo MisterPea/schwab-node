@@ -1,9 +1,16 @@
 import { constructMarketDataUrl, convertIsoStringToMs } from "../../helpers.js";
 import { getRequest } from "../../request/index.js";
-import { type GetPriceHistoryRequest, type GetPriceHistoryResponse, PriceHistoryQuerySchema, PriceHistoryResponseSchema } from "./schema.js";
-import * as z from 'zod';
+import {
+  type GetPriceHistoryRequest,
+  type GetPriceHistoryResponse,
+  PriceHistoryQuerySchema,
+  PriceHistoryResponseSchema,
+} from "./schema.js";
+import * as z from "zod";
 
-export async function getPriceHistory(config: GetPriceHistoryRequest): Promise<GetPriceHistoryResponse | undefined> {
+export async function getPriceHistory(
+  config: GetPriceHistoryRequest,
+): Promise<GetPriceHistoryResponse | undefined> {
   const result = PriceHistoryQuerySchema.safeParse(config);
 
   // Don't let invalid value pairings through
@@ -20,7 +27,7 @@ export async function getPriceHistory(config: GetPriceHistoryRequest): Promise<G
     config = { ...config, endDate: convertIsoStringToMs(config.endDate) };
   }
 
-  const url = constructMarketDataUrl(config, '/pricehistory');
+  const url = constructMarketDataUrl(config, "/pricehistory");
   const res = await getRequest(url);
   const json = await res.json();
   return PriceHistoryResponseSchema.parse(json);

@@ -1,13 +1,16 @@
-import { URL } from 'node:url';
-import type { OptionChainRequest } from './derivatives/get-option-chain/schema.js';
-import type { OptionExpirationRequest } from './derivatives/get-option-expirations/schema.js';
-import type { GetMoversConfig, MoversConfig } from './market-data/get-movers/schema.js';
-import type { GetQuoteRequest } from './market-data/get-quote/schema.js';
-import type { GetPriceHistoryRequest } from './market-data/price-history/schema.js';
+import { URL } from "node:url";
+import type { GetOptionChainRequest } from "./derivatives/get-option-chain/schema.js";
+import type { OptionExpirationRequest } from "./derivatives/get-option-expirations/schema.js";
+import type {
+  GetMoversConfig,
+  MoversConfig,
+} from "./market-data/get-movers/schema.js";
+import type { GetQuoteRequest } from "./market-data/get-quote/schema.js";
+import type { GetPriceHistoryRequest } from "./market-data/price-history/schema.js";
 
 type GetMarketDataConfig =
   | GetPriceHistoryRequest
-  | OptionChainRequest
+  | GetOptionChainRequest
   | OptionExpirationRequest
   | GetQuoteRequest
   | MoversConfig
@@ -29,17 +32,20 @@ export function convertIsoStringToMs(isoString: string): string {
 export function addDays(d: number): string {
   const date = new Date();
   date.setDate(date.getDate() + d);
-  const newDate = date.toISOString().split('T')[0];
+  const newDate = date.toISOString().split("T")[0];
   return newDate.toString();
 }
 
 /**
  * Convenience function to construct marketData url with queries
- * @param {Object} config Key/values pairs to include in the query 
+ * @param {Object} config Key/values pairs to include in the query
  * @param {string} endpoint Slash delineated link to the endpoint
  * @returns {string} Endpoint with queries
  */
-export function constructMarketDataUrl(config: GetMarketDataConfig | null, endpoint: string): string {
+export function constructMarketDataUrl(
+  config: GetMarketDataConfig | null,
+  endpoint: string,
+): string {
   const url = new URL(`${MARKET_DATA_ROOT}${endpoint}`);
 
   if (config) {
@@ -53,11 +59,14 @@ export function constructMarketDataUrl(config: GetMarketDataConfig | null, endpo
 
 /**
  * Convenience function to construct traderData url with queries
- * @param {Object} config Key/values pairs to include in the query 
+ * @param {Object} config Key/values pairs to include in the query
  * @param {string} endpoint Slash delineated link to the endpoint
  * @returns {string} Endpoint with queries
  */
-export function constructTraderDataUrl(config: GetMarketDataConfig | null, endpoint: string): string {
+export function constructTraderDataUrl(
+  config: GetMarketDataConfig | null,
+  endpoint: string,
+): string {
   const url = new URL(`${TRADER_DATA_ROOT}${endpoint}`);
 
   if (config) {
@@ -77,10 +86,10 @@ export function constructTraderDataUrl(config: GetMarketDataConfig | null, endpo
  */
 export async function readableStreamToObject<T = Record<string, unknown>>(
   stream: ReadableStream,
-  validate?: (obj: unknown) => obj is T
+  validate?: (obj: unknown) => obj is T,
 ): Promise<T[]> {
   const decoder = new TextDecoder();
-  let buffer = '';
+  let buffer = "";
   const result: T[] = [];
 
   for await (const chunk of stream) {
@@ -91,11 +100,11 @@ export async function readableStreamToObject<T = Record<string, unknown>>(
     let startIdx = 0;
 
     for (let i = 0; i < buffer.length; i++) {
-      if (buffer[i] === '{') braceCount++;
-      if (buffer[i] === '}') braceCount--;
+      if (buffer[i] === "{") braceCount++;
+      if (buffer[i] === "}") braceCount--;
 
       // Found a complete object
-      if (braceCount === 0 && buffer[i] === '}') {
+      if (braceCount === 0 && buffer[i] === "}") {
         const jsonStr = buffer.substring(startIdx, i + 1);
         try {
           const obj = JSON.parse(jsonStr) as unknown;

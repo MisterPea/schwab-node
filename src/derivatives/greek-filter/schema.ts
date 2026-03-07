@@ -1,5 +1,5 @@
-import * as z from 'zod';
-import type { OptionReturnArraySchema } from '../get-atm-option-data/schema.js';
+import * as z from "zod";
+import type { OptionReturnArraySchema } from "../get-atm-option-data/schema.js";
 
 const GreekRangeSchema = z.tuple([z.number(), z.number()]);
 
@@ -20,7 +20,7 @@ export const GreekFilterRequestSchema = z.object({
   symbol: z.string(),
   window: z.tuple([z.number(), z.number()]),
   greek: GreekSchema,
-  side: z.enum(['CALL', 'PUT', 'BOTH']).optional(),
+  side: z.enum(["CALL", "PUT", "BOTH"]).optional(),
   strikeCount: z.number().optional(),
 });
 

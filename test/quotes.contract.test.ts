@@ -6,7 +6,7 @@ const { mockGetRequest } = vi.hoisted(() => ({
   mockGetRequest: vi.fn(),
 }));
 
-vi.mock("../src/scripts/request.js", () => ({
+vi.mock("../src/request/index.js", () => ({
   getRequest: mockGetRequest,
 }));
 
@@ -41,6 +41,16 @@ describe("quotes contract", () => {
     expect(result.AAPL.quote?.bidPrice).toBe(180.12);
   });
 
+  test("accepts symbol arrays and normalizes them into query params", async () => {
+    const payload = await fixture("quotes.valid.json");
+    mockGetRequest.mockResolvedValueOnce(jsonResponse(payload));
+
+    await getQuote({ symbols: ["AAPL", "NVDA"], fields: "quote" });
+
+    expect(mockGetRequest).toHaveBeenCalledTimes(1);
+    expect(mockGetRequest.mock.calls[0][0]).toContain("symbols=AAPL%2CNVDA");
+  });
+
   test("allows extra top-level fields in quote envelopes", async () => {
     mockGetRequest.mockResolvedValueOnce(
       jsonResponse(
@@ -66,7 +76,9 @@ describe("quotes contract", () => {
     );
 
     const result = await getQuote({ symbols: "AAPL", fields: "quote" });
-    expect((result.AAPL as Record<string, unknown>).vendorTag).toBe("fixture-extra");
+    expect((result.AAPL as Record<string, unknown>).vendorTag).toBe(
+      "fixture-extra",
+    );
   });
 
   test("rejects malformed quote payload with a zod validation error", async () => {

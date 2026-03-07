@@ -1,9 +1,9 @@
-import express from 'express';
-import https from 'node:https';
-import { readFile } from 'node:fs/promises';
-import { URL } from 'node:url';
+import express from "express";
+import https from "node:https";
+import { readFile } from "node:fs/promises";
+import { URL } from "node:url";
 
-const CERTIFICATES_PATH = './.secrets/certs';
+const CERTIFICATES_PATH = "./.secrets/certs";
 
 export type AuthCodeOutput = {
   code: string;
@@ -17,15 +17,19 @@ export type AuthCodeOutput = {
  * @param {number} timeoutSec Optional timeout setting in seconds (default is 60sec)
  * @returns {Promise<string>} of code returned from authentication
  */
-export async function listenForAuthCode(redirectUri: string, timeoutSec: number = 60): Promise<AuthCodeOutput> {
+export async function listenForAuthCode(
+  redirectUri: string,
+  timeoutSec: number = 60,
+): Promise<AuthCodeOutput> {
   const u = new URL(redirectUri);
-  if (u.protocol !== 'https:') throw new Error(`Expected https redirect, got ${redirectUri}`);
+  if (u.protocol !== "https:")
+    throw new Error(`Expected https redirect, got ${redirectUri}`);
 
   const hostname = u.hostname;
   const certPath = `${CERTIFICATES_PATH}/${hostname}.pem`;
   const keyPath = `${CERTIFICATES_PATH}/${hostname}-key.pem`;
-  const port = Number(u.port) || '443';
-  const pathname = u.pathname || '/';
+  const port = Number(u.port) || "443";
+  const pathname = u.pathname || "/";
 
   let cert: Buffer;
   let key: Buffer;
@@ -33,7 +37,7 @@ export async function listenForAuthCode(redirectUri: string, timeoutSec: number 
     [cert, key] = await Promise.all([readFile(certPath), readFile(keyPath)]);
   } catch {
     throw new Error(
-      `Missing HTTPS certs for host "${hostname}". To install certificates, run: npx schwab-node-certs`
+      `Missing HTTPS certs for host "${hostname}". To install certificates, run: npx schwab-node-certs`,
     );
   }
 
@@ -65,9 +69,12 @@ export async function listenForAuthCode(redirectUri: string, timeoutSec: number 
 
     const timer = setTimeout(() => {
       server.close();
-      shutdown(new Error(`Timed out waiting for OAuth redirect after ${timeoutSec} seconds`));
+      shutdown(
+        new Error(
+          `Timed out waiting for OAuth redirect after ${timeoutSec} seconds`,
+        ),
+      );
     }, timeoutSec * 1000);
-
 
     app.get(/(.*)/, (req, res) => {
       const reqPath = req.path !== "/" ? req.path.replace(/\/+$/, "") : "/";
@@ -76,11 +83,18 @@ export async function listenForAuthCode(redirectUri: string, timeoutSec: number 
         return;
       }
 
-      const { code, session, error, error_description } = req.query as Record<string, unknown>;
+      const { code, session, error, error_description } = req.query as Record<
+        string,
+        unknown
+      >;
 
       if (typeof error === "string" && error.length) {
         res.status(400).send("Authorization failed. You can close this tab.");
-        shutdown(new Error(`OAuth error: ${error}${typeof error_description === "string" ? ` (${error_description})` : ""}`));
+        shutdown(
+          new Error(
+            `OAuth error: ${error}${typeof error_description === "string" ? ` (${error_description})` : ""}`,
+          ),
+        );
         return;
       }
 
@@ -97,7 +111,9 @@ export async function listenForAuthCode(redirectUri: string, timeoutSec: number 
       res
         .status(200)
         .set("Content-Type", "text/html; charset=utf-8")
-        .send("<html><body><h3>Authorized.</h3>You can close this tab.</body></html>");
+        .send(
+          "<html><body><h3>Authorized.</h3>You can close this tab.</body></html>",
+        );
 
       shutdown(undefined, { code, session });
     });
@@ -122,9 +138,11 @@ export async function tryOpenBrowser(url: string) {
   try {
     const { platform } = process;
     const cmd =
-      platform === "darwin" ? ["open", url] :
-        platform === "win32" ? ["cmd", "/c", "start", "", url] :
-          ["xdg-open", url];
+      platform === "darwin"
+        ? ["open", url]
+        : platform === "win32"
+          ? ["cmd", "/c", "start", "", url]
+          : ["xdg-open", url];
 
     const { spawn } = await import("node:child_process");
     spawn(cmd[0], cmd.slice(1), { stdio: "ignore", detached: true }).unref();

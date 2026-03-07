@@ -1,14 +1,16 @@
-import * as z from 'zod';
+import * as z from "zod";
 
 export const GetQuoteSchema = z.object({
-  symbols: z.string(),
-  fields: z.union([
-    z.literal('quote'),
-    z.literal('fundamental'),
-    z.literal('fundamental, quote'),
-    z.literal('quote, fundamental'),
-  ]).optional(),
-  indicative: z.boolean().optional()
+  symbols: z.union([z.string(), z.array(z.string())]),
+  fields: z
+    .union([
+      z.literal("quote"),
+      z.literal("fundamental"),
+      z.literal("fundamental, quote"),
+      z.literal("quote, fundamental"),
+    ])
+    .optional(),
+  indicative: z.boolean().optional(),
 });
 
 // Helpers
@@ -126,10 +128,11 @@ export const GetQuoteEnvelopeSchema = z
   // If the API adds new keys later, this prevents schema breakage:
   .loose();
 
-export const GetQuotesResponseSchema = z.record(z.string(), GetQuoteEnvelopeSchema);
+export const GetQuotesResponseSchema = z.record(
+  z.string(),
+  GetQuoteEnvelopeSchema,
+);
 
 export type GetQuoteRequest = z.infer<typeof GetQuoteSchema>;
 export type QuoteEnvelope = z.infer<typeof GetQuoteEnvelopeSchema>;
 export type GetQuotesResponse = z.infer<typeof GetQuotesResponseSchema>;
-
-

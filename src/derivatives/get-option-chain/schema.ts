@@ -1,57 +1,57 @@
-import * as z from 'zod';
+import * as z from "zod";
 
 export const OptionStrategySchema = z.enum([
-  'SINGLE',
-  'ANALYTICAL',
-  'COVERED',
-  'VERTICAL',
-  'CALENDAR',
-  'STRANGLE',
-  'STRADDLE',
-  'BUTTERFLY',
-  'CONDOR',
-  'DIAGONAL',
-  'COLLAR',
-  'ROLL',
+  "SINGLE",
+  "ANALYTICAL",
+  "COVERED",
+  "VERTICAL",
+  "CALENDAR",
+  "STRANGLE",
+  "STRADDLE",
+  "BUTTERFLY",
+  "CONDOR",
+  "DIAGONAL",
+  "COLLAR",
+  "ROLL",
 ]);
 
 export const AssetTypeSchema = z.enum([
-  'BOND',
-  'EQUITY',
-  'FOREX',
-  'FUTURE',
-  'FUTURE_OPTION',
-  'INDEX',
-  'MUTUAL_FUND',
-  'OPTION',
+  "BOND",
+  "EQUITY",
+  "FOREX",
+  "FUTURE",
+  "FUTURE_OPTION",
+  "INDEX",
+  "MUTUAL_FUND",
+  "OPTION",
 ]);
 
-export const ContractTypeSchema = z.enum(['CALL', 'PUT', 'ALL']);
-export const RangeSchema = z.enum(['ITM', 'OTM', 'NTM', 'ATM']);
+export const ContractTypeSchema = z.enum(["CALL", "PUT", "ALL"]);
+export const RangeSchema = z.enum(["ITM", "OTM", "NTM", "ATM"]);
 
 export const ExpMonthSchema = z.enum([
-  'JAN',
-  'FEB',
-  'MAR',
-  'APR',
-  'MAY',
-  'JUN',
-  'JUL',
-  'AUG',
-  'SEP',
-  'OCT',
-  'NOV',
-  'DEC',
-  'ALL',
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+  "ALL",
 ]);
 
-export const EntitlementSchema = z.enum(['PN', 'NP', 'PP']);
+export const EntitlementSchema = z.enum(["PN", "NP", "PP"]);
 
 export const ISODateSchema = z
   .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected ISO date format YYYY-MM-DD');
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Expected ISO date format YYYY-MM-DD");
 
-export const OptionChainRequestSchema = z.object({
+export const GetOptionChainRequestSchema = z.object({
   symbol: z.string().min(1),
   contractType: ContractTypeSchema.optional(),
   strikeCount: z.number().int().nonnegative().optional(),
@@ -71,7 +71,7 @@ export const OptionChainRequestSchema = z.object({
   entitlement: EntitlementSchema.optional(),
 });
 
-export type OptionChainRequest = z.infer<typeof OptionChainRequestSchema>;
+export type GetOptionChainRequest = z.infer<typeof GetOptionChainRequestSchema>;
 
 export const OptionDeliverableSchema = z
   .object({
@@ -84,7 +84,7 @@ export const OptionDeliverableSchema = z
 export type OptionDeliverable = z.infer<typeof OptionDeliverableSchema>;
 
 export const OptionQuoteSchema = z.object({
-  putCall: z.enum(['CALL', 'PUT']),
+  putCall: z.enum(["CALL", "PUT"]),
   symbol: z.string(),
   description: z.string(),
   exchangeName: z.string(),
@@ -121,15 +121,15 @@ export const OptionQuoteSchema = z.object({
   strikePrice: z.number(),
   expirationDate: z.string(),
   daysToExpiration: z.number(),
-  expirationType: z.enum(['W', 'M', 'Q', 'R']),
+  expirationType: z.enum(["W", "M", "Q", "S"]),
   lastTradingDay: z.number(),
   multiplier: z.number(),
-  settlementType: z.enum(['P', 'C']),
+  settlementType: z.enum(["P", "C"]),
   deliverableNote: z.string(),
   markChange: z.number(),
   markPercentChange: z.number(),
   optionRoot: z.string(),
-  exerciseType: z.enum(['A', 'E']),
+  exerciseType: z.enum(["A", "E"]),
   high52Week: z.number(),
   low52Week: z.number(),
   inTheMoney: z.boolean(),

@@ -1,17 +1,25 @@
-import * as z from 'zod';
-import { addDays } from '../../helpers.js';
-import { getOptionChain } from '../get-option-chain/index.js';
-import type { OptionChainRequest, OptionQuote } from '../get-option-chain/schema.js';
-import { type OptionReturn, OptionReturnArraySchema } from '../get-atm-option-data/schema.js';
+import * as z from "zod";
+import { addDays } from "../../helpers.js";
+import { getOptionChain } from "../get-option-chain/index.js";
+import type {
+  GetOptionChainRequest,
+  OptionQuote,
+} from "../get-option-chain/schema.js";
+import {
+  type OptionReturn,
+  OptionReturnArraySchema,
+} from "../get-atm-option-data/schema.js";
 import {
   type GreekFilterRequest,
   GreekFilterRequestSchema,
   type GreekFilterReturn,
-} from './schema.js';
+} from "./schema.js";
 
-const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THR', 'FRI', 'SAT'] as const;
+const weekDays = ["SUN", "MON", "TUE", "WED", "THR", "FRI", "SAT"] as const;
 
-export async function greekFilter(config: GreekFilterRequest): Promise<GreekFilterReturn> {
+export async function greekFilter(
+  config: GreekFilterRequest,
+): Promise<GreekFilterReturn> {
   const result = GreekFilterRequestSchema.safeParse(config);
 
   if (!result.success) {
@@ -19,12 +27,12 @@ export async function greekFilter(config: GreekFilterRequest): Promise<GreekFilt
     return [];
   }
 
-  const { symbol, window, greek, side = 'BOTH', strikeCount = 20 } = config;
+  const { symbol, window, greek, side = "BOTH", strikeCount = 20 } = config;
   const maxWindow = addDays(Math.max(...window));
   const minWindow = addDays(Math.min(...window));
   const greekArray = Object.keys(greek);
 
-  const optionConfig: OptionChainRequest = {
+  const optionConfig: GetOptionChainRequest = {
     symbol,
     fromDate: minWindow,
     toDate: maxWindow,
@@ -36,8 +44,8 @@ export async function greekFilter(config: GreekFilterRequest): Promise<GreekFilt
 
   const { callExpDateMap, putExpDateMap } = optionChain;
   const dateMaps = [
-    ...[(side === 'CALL' || side === 'BOTH') ? callExpDateMap : null],
-    ...[(side === 'PUT' || side === 'BOTH') ? putExpDateMap : null],
+    ...[side === "CALL" || side === "BOTH" ? callExpDateMap : null],
+    ...[side === "PUT" || side === "BOTH" ? putExpDateMap : null],
   ].filter(Boolean);
 
   const matchingStrikes: GreekFilterReturn = [];
@@ -58,7 +66,8 @@ export async function greekFilter(config: GreekFilterRequest): Promise<GreekFilt
     }
 
     for (const strike of flatExpirations) {
-      if (strike.daysToExpiration < minDte || strike.daysToExpiration > maxDte) continue;
+      if (strike.daysToExpiration < minDte || strike.daysToExpiration > maxDte)
+        continue;
 
       const passesAllGreeks = greekArray.every((g) => {
         const greekRange = greek[g as keyof typeof greek] as [number, number];
@@ -70,11 +79,11 @@ export async function greekFilter(config: GreekFilterRequest): Promise<GreekFilt
         let quoteKey: keyof OptionQuote;
         let transform: (v: number) => number = (v) => v;
 
-        if (g === 'absDelta') {
-          quoteKey = 'delta';
+        if (g === "absDelta") {
+          quoteKey = "delta";
           transform = Math.abs;
-        } else if (g === 'iv') {
-          quoteKey = 'volatility';
+        } else if (g === "iv") {
+          quoteKey = "volatility";
         } else {
           quoteKey = g as keyof OptionQuote;
         }
@@ -92,11 +101,14 @@ export async function greekFilter(config: GreekFilterRequest): Promise<GreekFilt
       matchingStrikes.push({
         put_call: strike.putCall,
         underlying: symbol,
+        bid: strike.bid,
+        ask: strike.ask,
+        bidAskSpreadPct: ((strike.ask - strike.bid) / strike.bid) * 100,
         symbol: strike.symbol,
         dte: strike.daysToExpiration,
         total_volume: strike.totalVolume,
         open_interest: strike.openInterest,
-        day_of_expiry: day_of_expiry as OptionReturn['day_of_expiry'],
+        day_of_expiry: day_of_expiry as OptionReturn["day_of_expiry"],
         theta: strike.theta,
         strike_price: strike.strikePrice,
         gamma: strike.gamma,

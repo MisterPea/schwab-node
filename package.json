@@ -1,6 +1,6 @@
 {
   "name": "@misterpea/schwab-node",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "author": "Perry Angelora <perry.angelora@gmail.com>",
   "repository": {
@@ -145,6 +145,10 @@
     "./marketData/request": {
       "types": "./dist/marketData/request.d.ts",
       "import": "./dist/marketData/request.js"
+    },
+    "./streaming/zmq": {
+      "types": "./dist/streaming/zmq/index.d.ts",
+      "import": "./dist/streaming/zmq/index.js"
     }
   },
   "files": [
@@ -167,6 +171,7 @@
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.0",
+    "@types/ws": "^8.18.1",
     "@vitest/coverage-v8": "^4.0.15",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
@@ -175,6 +180,8 @@
   "dependencies": {
     "@biomejs/biome": "^2.4.4",
     "express": "^5.2.1",
+    "ws": "^8.19.0",
+    "zeromq": "^6.5.0",
     "zod": "^4.3.6"
   }
 }

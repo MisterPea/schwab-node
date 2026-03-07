@@ -1,4 +1,4 @@
-import * as z from 'zod';
+import * as z from "zod";
 
 export const UserPreferenceAccountSchema = z.object({
   accountNumber: z.string(),
@@ -8,7 +8,7 @@ export const UserPreferenceAccountSchema = z.object({
   accountColor: z.string(),
   displayAcctId: z.string(),
   autoPositionEffect: z.boolean(),
-}).loose();
+});
 
 export const UserPreferenceStreamerInfoSchema = z.object({
   streamerSocketUrl: z.string(),
@@ -16,20 +16,24 @@ export const UserPreferenceStreamerInfoSchema = z.object({
   schwabClientCorrelId: z.string(),
   schwabClientChannel: z.string(),
   schwabClientFunctionId: z.string(),
-}).loose();
+});
 
 export const UserPreferenceOfferSchema = z.object({
   level2Permissions: z.boolean(),
   mktDataPermission: z.string(),
-}).loose();
+});
 
 export const UserPreferenceResponseSchema = z.object({
   accounts: z.array(UserPreferenceAccountSchema),
   streamerInfo: z.array(UserPreferenceStreamerInfoSchema),
   offers: z.array(UserPreferenceOfferSchema),
-}).loose();
+});
 
 export type UserPreferenceAccount = z.infer<typeof UserPreferenceAccountSchema>;
-export type UserPreferenceStreamerInfo = z.infer<typeof UserPreferenceStreamerInfoSchema>;
+export type UserPreferenceStreamerInfo = z.infer<
+  typeof UserPreferenceStreamerInfoSchema
+>;
 export type UserPreferenceOffer = z.infer<typeof UserPreferenceOfferSchema>;
-export type UserPreferenceResponse = z.infer<typeof UserPreferenceResponseSchema>;
+export type UserPreferenceResponse = z.infer<
+  typeof UserPreferenceResponseSchema
+>;

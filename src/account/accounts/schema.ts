@@ -1,10 +1,10 @@
-import * as z from 'zod';
+import * as z from "zod";
 
 // --- shared helpers ---
 const Num = z.number(); // swap to z.coerce.number() if these arrive as strings
 const Bool = z.boolean();
 
-export const AccountTypeSchema = z.enum(['CASH', 'MARGIN']); // add others if you see them
+export const AccountTypeSchema = z.enum(["CASH", "MARGIN"]); // add others if you see them
 
 export const InitialBalancesSchema = z.object({
   accruedInterest: Num,
@@ -105,7 +105,6 @@ export const AccountResponseItemSchema = z.object({
   securitiesAccount: SecuritiesAccountSchema,
   aggregatedBalance: AggregatedBalanceSchema,
 });
-
 
 export const AccountsResponseSchema = z.array(AccountResponseItemSchema);
 export type AccountsResponse = z.infer<typeof AccountsResponseSchema>;

@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - None yet.
 
+## [0.3.1] - 2026-03-27
+
+### Changed
+
+- Updated locked dependencies to include the latest Dependabot security fix refresh.
+
 ## [0.3.0] - 2026-03-07
 
 ### Added

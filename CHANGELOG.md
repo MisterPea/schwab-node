@@ -18,6 +18,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - None yet.
 
+## [0.4.0] - 2026-03-28
+
+### Added
+
+- Added `HistoricalReplayStreamer` for replaying file-backed OHLCV data through the ZeroMQ interface.
+- Added explicit historical stream services including `HISTORICAL_CHART_EQUITY` and `HISTORICAL_CHART_FUTURES` so downstream consumers can distinguish replay from live data.
+- Added historical replay normalization for the current JSONL and CSV fixture formats, including symbol resolution, timestamp conversion, and scaled-price conversion.
+- Added tests covering historical replay normalization, topic publishing, and timed replay pacing.
+
+### Changed
+
+- Expanded the README with historical replay usage, configuration, and message-shape documentation.
+
 ## [0.3.1] - 2026-03-27
 
 ### Changed

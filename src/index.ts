@@ -1,11 +1,27 @@
+import { HistoricalReplayStreamer } from "./streaming/zmq/historical.js";
+import { createSubscriber, listen } from "./streaming/zmq/subscriber.js";
+
 /* To run smoke test: RUN_LIVE_TESTS=1 npm run test:live:smoke */
 export * from "./account/index.js";
 export * from "./derivatives/index.js";
 export * from "./market-data/index.js";
 export * from "./oauth/schwabAuth.js";
 export { SchwabStreamer } from "./streaming/websocket/index.js";
-export { createSubscriber, listen } from "./streaming/zmq/index.js";
+export {
+  HistoricalReplayStreamer,
+  createSubscriber,
+  listen,
+} from "./streaming/zmq/index.js";
 export * as zmq from "./streaming/zmq/index.js";
+export type {
+  HistoricalChartRecord,
+  HistoricalPublishedMessage,
+  HistoricalReplayConfig,
+  HistoricalReplayFormat,
+  HistoricalReplayPace,
+  HistoricalReplayPayload,
+  HistoricalStreamService,
+} from "./streaming/zmq/index.js";
 export type {
   AcctActivityFieldId,
   AcctActivityFieldName,

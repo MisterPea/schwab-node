@@ -596,6 +596,76 @@ console.log(LEVELONE_FUTURES_FIELDS["10"]); // "quoteTime"
 ```
 </details>
 
+## Stream Historical Data
+
+Use `HistoricalReplayStreamer` when you want to replay file-backed OHLCV data through the same local ZeroMQ transport as live streaming, while keeping replay data explicitly separate from live Schwab services.
+
+Historical replay publishes `type: "data"` messages on historical service topics such as `schwab.data.HISTORICAL_CHART_EQUITY`. That separation is intentional: downstream consumers can hard-check the service name and refuse to place live trades when they are connected to replayed data.
+
+```typescript
+import { HistoricalReplayStreamer, createSubscriber, listen } from "@misterpea/schwab-node";
+
+const replay = new HistoricalReplayStreamer();
+
+const subscriber = await createSubscriber("tcp://localhost:5555", ["schwab.data.HISTORICAL_"]);
+void listen(subscriber, (topic, message) => {
+  console.log(topic, message);
+});
+
+await replay.replayFile({
+  filePath: "test/historicalData/synthetic-bars-1m-vendor.csv",
+  service: "HISTORICAL_CHART_EQUITY",
+  pace: "burst",
+});
+```
+
+Replay config:
+
+| Field | Description | Default |
+| --- | --- | --- |
+| `filePath` | Path to a historical `.jsonl` or `.csv` file | Required |
+| `service` | Historical service name to publish | `HISTORICAL_CHART_EQUITY` |
+| `symbol` | Fallback symbol when rows do not include one | None |
+| `format` | Explicit source format override | Auto-detected from extension |
+| `pace` | `burst` or `timed` replay | `burst` |
+| `speed` | Replay speed multiplier for timed mode | `1` |
+
+Current source handling:
+- `.jsonl` expects one OHLCV record per line with fields such as `open`, `high`, `low`, `close`, `volume`, and `datetime`.
+- `.csv` supports the included vendor-style test fixture shape with `ts_event` nanosecond timestamps and scaled integer OHLC values.
+- Symbol resolution uses row symbol first, then the explicit `symbol` config, then filename inference.
+
+Example published message:
+
+```json
+{
+  "type": "data",
+  "receivedAt": 1743177600000,
+  "payload": {
+    "service": "HISTORICAL_CHART_EQUITY",
+    "command": "REPLAY",
+    "content": [
+      {
+        "symbol": "TESTCSV",
+        "openPrice": 101.25,
+        "highPrice": 101.5,
+        "lowPrice": 101,
+        "closePrice": 101.4,
+        "volume": 300,
+        "chartTime": 1802000000000
+      }
+    ],
+    "source": "synthetic-bars-1m-vendor.csv",
+    "replayMode": "burst"
+  }
+}
+```
+
+Notes:
+- Historical replay does not reuse live Schwab service names like `CHART_EQUITY`; it always uses `HISTORICAL_*` service values.
+- The current ZMQ adapter remains focused on live Schwab numeric field remapping and is not used for replay normalization.
+- Initial scope is OHLCV replay. Additional historical service shapes can be added later without changing the live stream contract.
+
 ## Explicit Auth
 
 Most users can rely on default auth loaded from `.env`. Use `SchwabAuth` directly when you want to control token acquisition and refresh explicitly.
@@ -694,7 +764,7 @@ https://github.com/MisterPea/schwab-node/issues/new/choose
 Planned features currently in development:
 
 - Expand coverage for remaining account endpoints
-- Add historical replay support through the ZeroMQ stream
+- Enhance historical data replay support
 - Improve ZeroMQ adapter routing and message filtering
 - Refine and expand documentation
 

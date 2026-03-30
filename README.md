@@ -4,6 +4,7 @@ A Node.js wrapper for Schwab's APIs with OAuth, market data, account endpoints, 
 
 ![Node](https://img.shields.io/badge/node-%3E%3D20.6.0-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
+![NPM](https://img.shields.io/npm/v/%40misterpea%2Fschwab-node)
 
 ## Quickstart
 

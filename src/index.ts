@@ -5,7 +5,10 @@ import { createSubscriber, listen } from "./streaming/zmq/subscriber.js";
 export * from "./account/index.js";
 export * from "./derivatives/index.js";
 export * from "./market-data/index.js";
+export * from "./oauth/defaultAuth.js";
+export * from "./oauth/paths.js";
 export * from "./oauth/schwabAuth.js";
+export * from "./oauth/tokenStore.js";
 export { SchwabStreamer } from "./streaming/websocket/index.js";
 export {
   HistoricalReplayStreamer,

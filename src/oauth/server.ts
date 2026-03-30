@@ -2,8 +2,7 @@ import express from "express";
 import https from "node:https";
 import { readFile } from "node:fs/promises";
 import { URL } from "node:url";
-
-const CERTIFICATES_PATH = "./.secrets/certs";
+import { resolveSchwabPaths, type PathOptions } from "./paths.js";
 
 export type AuthCodeOutput = {
   code: string;
@@ -20,15 +19,17 @@ export type AuthCodeOutput = {
 export async function listenForAuthCode(
   redirectUri: string,
   timeoutSec: number = 60,
+  paths?: PathOptions,
 ): Promise<AuthCodeOutput> {
+  const resolvedPaths = resolveSchwabPaths(paths);
   const u = new URL(redirectUri);
   if (u.protocol !== "https:")
     throw new Error(`Expected https redirect, got ${redirectUri}`);
 
   const hostname = u.hostname;
-  const certPath = `${CERTIFICATES_PATH}/${hostname}.pem`;
-  const keyPath = `${CERTIFICATES_PATH}/${hostname}-key.pem`;
-  const port = Number(u.port) || "443";
+  const certPath = `${resolvedPaths.certsDir}/${hostname}.pem`;
+  const keyPath = `${resolvedPaths.certsDir}/${hostname}-key.pem`;
+  const port = Number(u.port) || 443;
   const pathname = u.pathname || "/";
 
   let cert: Buffer;

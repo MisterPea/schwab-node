@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, realpathSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, join, relative, sep } from "node:path";
 import process from "node:process";
 import readline from "node:readline/promises";
+import { fileURLToPath } from "node:url";
+import { readEnvValue } from "../oauth/env.js";
+import { resolveSchwabPaths, type PathOptions } from "../oauth/paths.js";
 
 type ValidationResult =
   | { ok: true; parsed: URL }
@@ -14,6 +17,12 @@ type CertGenerationParams = {
   hostname: string;
   certPath: string;
   keyPath: string;
+};
+
+export type SetupCertsOptions = {
+  callbackUrl?: string;
+  force?: boolean;
+  paths?: PathOptions;
 };
 
 function getArgValue(name: string): string | null {
@@ -31,22 +40,8 @@ function resolveProjectRoot(): string {
   return process.env.INIT_CWD || process.cwd();
 }
 
-async function readRedirectUriFromEnvFile(
-  projectRoot: string,
-): Promise<string | null> {
-  const envPath = join(projectRoot, ".env");
-  if (!existsSync(envPath)) return null;
-
-  const raw = await readFile(envPath, "utf8");
-  const line = raw
-    .split(/\r?\n/)
-    .map((v) => v.trim())
-    .find((v) => v.startsWith("SCHWAB_REDIRECT_URI="));
-  if (!line) return null;
-  return (
-    line.slice("SCHWAB_REDIRECT_URI=".length).replace(/^["']|["']$/g, "") ||
-    null
-  );
+async function readRedirectUriFromEnvFile(envPath: string): Promise<string | null> {
+  return (await readEnvValue(envPath, "SCHWAB_REDIRECT_URI")) ?? null;
 }
 
 function validateCallbackUrl(callbackUrl: string): ValidationResult {
@@ -160,18 +155,30 @@ function generateCertsWithMkcert({
 }
 
 async function writeCallbackFile(
-  projectRoot: string,
+  callbackPath: string,
   callbackUrl: string,
 ): Promise<void> {
-  const callbackPath = join(projectRoot, ".secrets", "callback-url");
   await mkdir(dirname(callbackPath), { recursive: true });
   await writeFile(callbackPath, `${callbackUrl}\n`, "utf8");
 }
 
-async function ensureSecretsIgnored(projectRoot: string): Promise<void> {
-  const gitignorePath = join(projectRoot, ".gitignore");
-  const entry = ".secrets/";
+function toGitignoreEntry(projectRoot: string, storageRoot: string): string | null {
+  const relPath = relative(projectRoot, storageRoot);
+  if (!relPath || relPath.startsWith("..") || relPath.includes(`..${sep}`)) {
+    return null;
+  }
 
+  return `${relPath.replaceAll(sep, "/").replace(/\/+$/, "")}/`;
+}
+
+async function ensureSecretsIgnored(
+  projectRoot: string,
+  storageRoot: string,
+): Promise<void> {
+  const entry = toGitignoreEntry(projectRoot, storageRoot);
+  if (!entry) return;
+
+  const gitignorePath = join(projectRoot, ".gitignore");
   let current = "";
   if (existsSync(gitignorePath)) {
     current = await readFile(gitignorePath, "utf8");
@@ -180,7 +187,7 @@ async function ensureSecretsIgnored(projectRoot: string): Promise<void> {
   const hasEntry = current
     .split(/\r?\n/)
     .map((line) => line.trim())
-    .some((line) => line === ".secrets" || line === entry);
+    .some((line) => line === entry || line === entry.replace(/\/$/, ""));
 
   if (hasEntry) return;
 
@@ -190,17 +197,29 @@ async function ensureSecretsIgnored(projectRoot: string): Promise<void> {
   console.info(`[schwab-node] Added ${entry} to .gitignore`);
 }
 
-async function run() {
+/**
+ * Generates localhost callback certificates and persists callback metadata.
+ *
+ * @param {SetupCertsOptions} [options] Callback, force, and path overrides.
+ * @returns {Promise<void>} Resolves after setup completes or is skipped.
+ */
+export async function setupCerts(
+  options: SetupCertsOptions = {},
+): Promise<void> {
   console.clear();
-  const projectRoot = resolveProjectRoot();
-  await ensureSecretsIgnored(projectRoot);
-  const force = hasFlag("--force");
-  let callbackUrl = getArgValue("--callback");
+  const projectRoot = options.paths?.cwd ?? resolveProjectRoot();
+  const paths = resolveSchwabPaths({
+    cwd: projectRoot,
+    ...options.paths,
+  });
 
+  await ensureSecretsIgnored(projectRoot, paths.storageRoot);
+
+  let callbackUrl = options.callbackUrl;
   if (!callbackUrl) {
     callbackUrl =
       process.env.SCHWAB_REDIRECT_URI ||
-      (await readRedirectUriFromEnvFile(projectRoot));
+      ((await readRedirectUriFromEnvFile(paths.envPath)) ?? undefined);
   }
 
   if (!callbackUrl && process.stdin.isTTY) {
@@ -223,15 +242,14 @@ async function run() {
   }
 
   const { parsed } = validated;
-  const certsDir = join(projectRoot, ".secrets", "certs");
-  const certPath = join(certsDir, `${parsed.hostname}.pem`);
-  const keyPath = join(certsDir, `${parsed.hostname}-key.pem`);
+  const certPath = join(paths.certsDir, `${parsed.hostname}.pem`);
+  const keyPath = join(paths.certsDir, `${parsed.hostname}-key.pem`);
 
-  await mkdir(certsDir, { recursive: true });
+  await mkdir(paths.certsDir, { recursive: true });
 
   const alreadyExists = existsSync(certPath) && existsSync(keyPath);
-  if (alreadyExists && !force) {
-    await writeCallbackFile(projectRoot, callbackUrl);
+  if (alreadyExists && !options.force) {
+    await writeCallbackFile(paths.callbackUrlPath, callbackUrl);
     console.info(`[schwab-node] Certs already exist for ${parsed.hostname}.`);
     console.info("[schwab-node] Use --force to regenerate.");
     return;
@@ -261,17 +279,42 @@ async function run() {
     );
   }
 
-  await writeCallbackFile(projectRoot, callbackUrl);
-  console.info(`\x1b[32m \n[schwab-node] Generated certs at ${certsDir}`);
+  await writeCallbackFile(paths.callbackUrlPath, callbackUrl);
+  console.info(`\x1b[32m \n[schwab-node] Generated certs at ${paths.certsDir}`);
   console.info(
-    `[schwab-node] Callback URL saved to ${join(projectRoot, ".secrets", "callback-url")}`,
+    `[schwab-node] Callback URL saved to ${paths.callbackUrlPath}`,
   );
   console.info(
-    `\n[schwab-node] Be sure to add a .env file in your project root with your SCHWAB_CLIENT_SECRET, SCHWAB_CLIENT_ID, and SCHWAB_REDIRECT_URI \n  \x1b[0m`,
+    `\n[schwab-node] Be sure to add credentials via your configured env file or injected secret provider. \n  \x1b[0m`,
   );
 }
 
-run().catch((err) => {
-  console.error(err instanceof Error ? err.message : String(err));
-  process.exit(1);
-});
+async function run(): Promise<void> {
+  const projectRoot = resolveProjectRoot();
+  await setupCerts({
+    callbackUrl: getArgValue("--callback") || undefined,
+    force: hasFlag("--force"),
+    paths: {
+      cwd: projectRoot,
+      envPath: getArgValue("--env-path") || undefined,
+      storageRoot: getArgValue("--storage-root") || undefined,
+    },
+  });
+}
+
+function isExecutedDirectly(): boolean {
+  if (!process.argv[1]) return false;
+
+  try {
+    return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (isExecutedDirectly()) {
+  run().catch((err) => {
+    console.error(err instanceof Error ? err.message : String(err));
+    process.exit(1);
+  });
+}

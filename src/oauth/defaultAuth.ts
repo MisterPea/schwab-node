@@ -1,36 +1,64 @@
-import { SchwabAuth, type SchwabAuthConfig } from "./schwabAuth.js";
-import process from "node:process";
+import {
+  SchwabAuth,
+  type PathOptions,
+  type SchwabAuthConfig,
+  type TokenStore,
+} from "./schwabAuth.js";
+
+type CreateAuthFromEnvOptions = {
+  paths?: PathOptions;
+  tokenStore?: TokenStore;
+};
 
 let defaultAuthInstance: SchwabAuth | null = null;
 
+/**
+ * Creates and stores the shared default auth instance.
+ *
+ * @param {SchwabAuthConfig} config Auth configuration and storage overrides.
+ * @returns {SchwabAuth} The configured auth instance.
+ */
 export function configureDefaultAuth(config: SchwabAuthConfig): SchwabAuth {
   const auth = new SchwabAuth(config);
   defaultAuthInstance = auth;
   return auth;
 }
 
+/**
+ * Replaces the shared default auth instance.
+ *
+ * @param {SchwabAuth} auth Auth instance to reuse across helper calls.
+ * @returns {void}
+ */
 export function setDefaultAuth(auth: SchwabAuth): void {
   defaultAuthInstance = auth;
 }
 
-function reqEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) throw new Error(`Missing env var ${name}`);
-  return value;
-}
-
-export function createAuthFromEnv(): SchwabAuth {
-  process.loadEnvFile(".env");
+/**
+ * Creates an auth instance that resolves credentials from the configured env file.
+ *
+ * @param {CreateAuthFromEnvOptions} [options] Path and token-store overrides.
+ * @returns {SchwabAuth} New auth instance that reads credentials lazily.
+ */
+export function createAuthFromEnv(
+  options: CreateAuthFromEnvOptions = {},
+): SchwabAuth {
   return new SchwabAuth({
-    clientId: reqEnv("SCHWAB_CLIENT_ID"),
-    clientSecret: reqEnv("SCHWAB_CLIENT_SECRET"),
-    redirectUri: reqEnv("SCHWAB_REDIRECT_URI"),
+    paths: options.paths,
+    tokenStore: options.tokenStore,
   });
 }
 
+/**
+ * Returns the shared default auth instance, creating one from env defaults when needed.
+ *
+ * @returns {SchwabAuth} Shared auth instance.
+ */
 export function getDefaultAuth(): SchwabAuth {
   if (!defaultAuthInstance) {
     defaultAuthInstance = createAuthFromEnv();
   }
   return defaultAuthInstance;
 }
+
+export type { CreateAuthFromEnvOptions };

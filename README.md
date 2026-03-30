@@ -24,6 +24,7 @@ SCHWAB_REDIRECT_URI=https://127.0.0.1:8443
 ```
 
 The redirect URI must be local HTTPS with an explicit port.
+You can also point auth at a different env file later via `paths.envPath`.
 
 ### 3. Generate local callback certs
 
@@ -32,6 +33,7 @@ npx schwab-node-certs --callback https://127.0.0.1:8443
 ```
 
 The cert script prefers `mkcert` when available and falls back to `openssl` otherwise.
+You can override the default paths with `--env-path` and `--storage-root` when needed.
 
 ### 4. Make a request
 
@@ -72,6 +74,7 @@ Setup notes:
 - Default authenticated requests load credentials from `.env`.
 - Tokens and callback metadata are stored under `.secrets/`.
 - The cert setup command also saves the callback URL and adds `.secrets/` to `.gitignore`.
+- `paths.envPath` and `paths.storageRoot` let hosts override those defaults without changing call sites elsewhere in the package.
 
 ## Main Surfaces
 
@@ -673,21 +676,128 @@ Most users can rely on default auth loaded from `.env`. Use `SchwabAuth` directl
 ```typescript
 import { SchwabAuth } from "@misterpea/schwab-node";
 
-process.loadEnvFile(".env");
-
-function reqEnv(name: string) {
-  const value = process.env[name];
-  if (!value) throw new Error(`Missing env var ${name}`);
-  return value;
-}
-
 const auth = new SchwabAuth({
-  clientId: reqEnv("SCHWAB_CLIENT_ID"),
-  clientSecret: reqEnv("SCHWAB_CLIENT_SECRET"),
-  redirectUri: reqEnv("SCHWAB_REDIRECT_URI"),
+  clientId: "your-client-id",
+  clientSecret: "your-client-secret",
+  redirectUri: "https://127.0.0.1:8443",
 });
 
 const tokenInfo = await auth.getAuth();
+```
+
+Auth resolution order is:
+- explicit `clientId`, `clientSecret`, and `redirectUri`
+- optional `secrets` provider functions
+- the env file resolved from `paths.envPath`
+
+Path resolution defaults are:
+- `envPath`: `./.env`
+- `storageRoot`: `./.secrets`
+- `tokenPath`: `${storageRoot}/token`
+- `certsDir`: `${storageRoot}/certs`
+- `callbackUrlPath`: `${storageRoot}/callback-url`
+
+### Path Resolution Helper
+
+Use `resolveSchwabPaths()` when the host application needs to inspect or share the package's resolved filesystem layout without reimplementing its path rules.
+
+```typescript
+import { resolveSchwabPaths } from "@misterpea/schwab-node";
+
+const paths = resolveSchwabPaths({
+  cwd: process.cwd(),
+  envPath: "./config/schwab.env",
+  storageRoot: "./runtime/schwab-secrets",
+});
+
+console.log(paths.envPath);
+console.log(paths.tokenPath);
+console.log(paths.certsDir);
+```
+
+`resolveSchwabPaths()` only returns the resolved paths. It does not reconfigure auth or requests on its own.
+
+Pass the result into `SchwabAuth` or `configureDefaultAuth` to make the package use those locations:
+
+```typescript
+import {
+  SchwabAuth,
+  configureDefaultAuth,
+  resolveSchwabPaths,
+} from "@misterpea/schwab-node";
+
+const paths = resolveSchwabPaths({
+  cwd: process.cwd(),
+  envPath: "./.config/schwab.env",
+  storageRoot: "./.config",
+});
+
+const auth = new SchwabAuth({ paths });
+
+configureDefaultAuth({ paths });
+```
+
+Returned shape:
+
+```typescript
+type SchwabPaths = {
+  cwd: string;
+  envPath: string;
+  storageRoot: string;
+  tokenPath: string;
+  certsDir: string;
+  callbackUrlPath: string;
+};
+```
+
+`resolveSchwabPaths()` returns absolute paths. Relative overrides are resolved from `cwd`, which defaults to `process.cwd()`.
+
+### Custom Paths
+
+Use `paths` when the host app needs a different env file or storage directory while keeping the rest of the package autonomous (think electron.js or maybe react-native).
+
+```typescript
+import { SchwabAuth } from "@misterpea/schwab-node";
+
+const auth = new SchwabAuth({
+  paths: {
+    envPath: "./config/schwab.env",
+    storageRoot: "./runtime/schwab-secrets",
+  },
+});
+```
+
+### Custom Token Storage
+
+Use `tokenStore` when tokens should not live in the default plaintext file store.
+
+```typescript
+import {
+  EncryptedFileTokenStore,
+  SchwabAuth,
+  type TokenCipher,
+} from "@misterpea/schwab-node";
+
+const cipher: TokenCipher = {
+  async encrypt(plainText) {
+    return myEncrypt(plainText);
+  },
+  async decrypt(cipherText) {
+    return myDecrypt(cipherText);
+  },
+};
+
+const auth = new SchwabAuth({
+  tokenStore: new EncryptedFileTokenStore(
+    "/secure/location/schwab-token.enc",
+    cipher,
+  ),
+  secrets: {
+    getClientId: () => process.env.SCHWAB_CLIENT_ID,
+    getClientSecret: () => myKeychain.read("schwab-client-secret"),
+    getRedirectUri: () => "https://127.0.0.1:8443/callback",
+  },
+});
 ```
 
 Token shape:
@@ -730,6 +840,8 @@ import { getQuote, getPriceHistory } from "@misterpea/schwab-node/market-data";
 import { getOptionChain, greekFilter } from "@misterpea/schwab-node/derivatives";
 import { getAccounts } from "@misterpea/schwab-node/account";
 import { SchwabAuth } from "@misterpea/schwab-node/oauth/schwabAuth";
+import { resolveSchwabPaths } from "@misterpea/schwab-node/oauth/paths";
+import { EncryptedFileTokenStore } from "@misterpea/schwab-node/oauth/tokenStore";
 import { createSubscriber, listen } from "@misterpea/schwab-node/streaming/zmq";
 ```
 </details>

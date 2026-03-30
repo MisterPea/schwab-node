@@ -1,6 +1,6 @@
 {
   "name": "@misterpea/schwab-node",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "license": "MIT",
   "author": "Perry Angelora <perry.angelora@gmail.com>",
   "repository": {
@@ -53,6 +53,10 @@
     "./oauth/defaultAuth": {
       "types": "./dist/oauth/defaultAuth.d.ts",
       "import": "./dist/oauth/defaultAuth.js"
+    },
+    "./oauth/paths": {
+      "types": "./dist/oauth/paths.d.ts",
+      "import": "./dist/oauth/paths.js"
     },
     "./oauth/tokenStore": {
       "types": "./dist/oauth/tokenStore.d.ts",

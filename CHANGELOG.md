@@ -18,6 +18,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - None yet.
 
+## [0.4.1] - 2026-03-30
+
+### Added
+
+- Added `resolveSchwabPaths()` and public path types so auth, token, and cert locations can be overridden from one package-owned resolver.
+- Added injectable `TokenStore`, `TokenCipher`, and `EncryptedFileTokenStore` interfaces for secure host-managed token persistence.
+- Added tests covering path resolution, custom token storage, env-path overrides, and cert setup path overrides.
+
+### Changed
+
+- `SchwabAuth` can now resolve credentials from direct config, injected secret providers, or an overridden env file path.
+- The cert setup flow now uses the same path resolver as auth and supports `--env-path` and `--storage-root`.
+- Expanded the README with path override and secure token storage examples.
+
 ## [0.4.0] - 2026-03-28
 
 ### Added

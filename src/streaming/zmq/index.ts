@@ -7,11 +7,13 @@ export {
   publishHistoricalRecord,
 } from "./historical.js";
 export type {
+  HistoricalBaseStreamService,
   HistoricalChartRecord,
   HistoricalPublishedMessage,
   HistoricalReplayConfig,
   HistoricalReplayFormat,
   HistoricalReplayPace,
   HistoricalReplayPayload,
+  HistoricalReplaySectionKind,
   HistoricalStreamService,
 } from "./historicalSchema.js";

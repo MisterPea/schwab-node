@@ -17,12 +17,14 @@ export {
 } from "./streaming/zmq/index.js";
 export * as zmq from "./streaming/zmq/index.js";
 export type {
+  HistoricalBaseStreamService,
   HistoricalChartRecord,
   HistoricalPublishedMessage,
   HistoricalReplayConfig,
   HistoricalReplayFormat,
   HistoricalReplayPace,
   HistoricalReplayPayload,
+  HistoricalReplaySectionKind,
   HistoricalStreamService,
 } from "./streaming/zmq/index.js";
 export type {

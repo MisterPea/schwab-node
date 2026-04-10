@@ -1,15 +1,18 @@
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import type { Publisher } from "zeromq";
 import { createPublisher, publish } from "./publisher.js";
 import {
+  HistoricalBaseStreamServiceSchema,
   HistoricalReplayConfigSchema,
   HistoricalReplayFormatSchema,
   type HistoricalChartRecord,
+  type HistoricalBaseStreamService,
   type HistoricalPublishedMessage,
   type HistoricalReplayConfig,
   type HistoricalReplayFormat,
   type HistoricalReplayPace,
+  type HistoricalReplaySectionKind,
   type HistoricalStreamService,
 } from "./historicalSchema.js";
 
@@ -40,6 +43,20 @@ type CsvRow = {
   close?: string;
   volume?: string;
   ts_event?: string;
+};
+
+type HistoricalReplaySection = {
+  service: HistoricalStreamService;
+  label: string;
+  kind: HistoricalReplaySectionKind;
+  index: number;
+  files: string[];
+};
+
+type HistoricalRecordLoadContext = {
+  filePath: string;
+  format?: HistoricalReplayFormat;
+  symbol?: string;
 };
 
 /**
@@ -157,7 +174,7 @@ function resolveSymbol(
  */
 function normalizeJsonlRow(
   row: JsonlRow,
-  config: HistoricalReplayConfig,
+  config: HistoricalRecordLoadContext,
 ): HistoricalChartRecord {
   return {
     symbol: resolveSymbol(row.symbol, config.symbol, config.filePath),
@@ -203,7 +220,7 @@ function parseCsvLine(header: string[], line: string): CsvRow {
  */
 function normalizeCsvRow(
   row: CsvRow,
-  config: HistoricalReplayConfig,
+  config: HistoricalRecordLoadContext,
 ): HistoricalChartRecord {
   return {
     symbol: resolveSymbol(row.symbol, config.symbol, config.filePath),
@@ -229,8 +246,24 @@ export async function loadHistoricalRecords(
   rawConfig: HistoricalReplayConfig,
 ): Promise<HistoricalChartRecord[]> {
   const config = HistoricalReplayConfigSchema.parse(rawConfig);
-  const format = config.format ?? detectFormat(config.filePath);
-  const rawText = await readFile(config.filePath, "utf8");
+  if (!config.filePath) {
+    throw new Error("`loadHistoricalRecords` requires `filePath` in legacy mode");
+  }
+
+  return loadHistoricalRecordsFromFile(config.filePath, config);
+}
+
+async function loadHistoricalRecordsFromFile(
+  filePath: string,
+  config: Pick<HistoricalReplayConfig, "format" | "symbol">,
+): Promise<HistoricalChartRecord[]> {
+  const loadContext: HistoricalRecordLoadContext = {
+    filePath,
+    format: config.format,
+    symbol: config.symbol,
+  };
+  const format = loadContext.format ?? detectFormat(filePath);
+  const rawText = await readFile(filePath, "utf8");
   const lines = rawText
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -239,7 +272,7 @@ export async function loadHistoricalRecords(
   if (format === "jsonl") {
     return lines.map((line) => {
       const row = JSON.parse(line) as JsonlRow;
-      return normalizeJsonlRow(row, config);
+      return normalizeJsonlRow(row, loadContext);
     });
   }
 
@@ -251,7 +284,9 @@ export async function loadHistoricalRecords(
     .map((column) => column.trim())
     .filter(Boolean);
 
-  return dataLines.map((line) => normalizeCsvRow(parseCsvLine(header, line), config));
+  return dataLines.map((line) =>
+    normalizeCsvRow(parseCsvLine(header, line), loadContext),
+  );
 }
 
 /**
@@ -286,6 +321,12 @@ export async function publishHistoricalRecord(
   record: HistoricalChartRecord,
   source: string,
   replayMode: HistoricalReplayPace,
+  metadata?: {
+    baseService?: HistoricalBaseStreamService;
+    sectionLabel?: string;
+    sectionIndex?: number;
+    sectionKind?: HistoricalReplaySectionKind;
+  },
 ): Promise<void> {
   const message: HistoricalPublishedMessage = {
     type: "data",
@@ -296,6 +337,7 @@ export async function publishHistoricalRecord(
       content: [record],
       source,
       replayMode,
+      ...metadata,
     },
   };
 
@@ -362,11 +404,57 @@ export class HistoricalReplayStreamer {
       throw new Error("Historical replay publisher is not connected");
     }
 
-    const records = await loadHistoricalRecords(config);
-    const speed = config.speed ?? 1;
+    if (config.filePath) {
+      await assertReplayFile(config.filePath);
+      const records = await loadHistoricalRecords(config);
+      await this.publishSectionRecords(sock, config.service, records, {
+        source: path.basename(config.filePath),
+        pace: config.pace,
+        speed: config.speed,
+      });
+      return;
+    }
+
+    const sections = buildReplaySections(config);
+    const files = sections.flatMap((section) => section.files);
+    await Promise.all(files.map((filePath) => assertReplayFile(filePath)));
+
+    for (const section of sections) {
+      const records = await loadRecordsForFiles(section.files, config);
+      await this.publishSectionRecords(sock, section.service, records, {
+        source: section.files.map((filePath) => path.basename(filePath)).join(","),
+        pace: config.pace,
+        speed: config.speed,
+        metadata: {
+          baseService: config.service,
+          sectionKind: section.kind,
+          sectionLabel: section.label,
+          sectionIndex: section.index,
+        },
+      });
+    }
+  }
+
+  private async publishSectionRecords(
+    sock: Publisher,
+    service: HistoricalStreamService,
+    records: HistoricalChartRecord[],
+    options: {
+      source: string;
+      pace: HistoricalReplayPace;
+      speed?: number;
+      metadata?: {
+        baseService?: HistoricalBaseStreamService;
+        sectionLabel?: string;
+        sectionIndex?: number;
+        sectionKind?: HistoricalReplaySectionKind;
+      };
+    },
+  ): Promise<void> {
+    const speed = options.speed ?? 1;
 
     for (const [index, record] of records.entries()) {
-      if (config.pace === "timed" && index > 0) {
+      if (options.pace === "timed" && index > 0) {
         const prior = records[index - 1];
         const deltaMs = Math.max(0, record.chartTime - prior.chartTime);
         if (deltaMs > 0) {
@@ -377,17 +465,109 @@ export class HistoricalReplayStreamer {
       await publishHistoricalRecord(
         sock,
         this.topicPrefix,
-        config.service,
+        service,
         record,
-        path.basename(config.filePath),
-        config.pace,
+        options.source,
+        options.pace,
+        options.metadata,
       );
     }
   }
 }
 
+async function assertReplayFile(filePath: string): Promise<void> {
+  const fileStat = await stat(filePath).catch(() => null);
+  if (!fileStat?.isFile()) {
+    throw new Error(`Historical replay file does not exist: "${filePath}"`);
+  }
+
+  detectFormat(filePath);
+}
+
+async function loadRecordsForFiles(
+  filePaths: string[],
+  config: Pick<HistoricalReplayConfig, "format" | "symbol">,
+): Promise<HistoricalChartRecord[]> {
+  const batches = await Promise.all(
+    filePaths.map((filePath) => loadHistoricalRecordsFromFile(filePath, config)),
+  );
+
+  return batches.flat();
+}
+
+function buildReplaySections(
+  config: HistoricalReplayConfig,
+): HistoricalReplaySection[] {
+  const sections: HistoricalReplaySection[] = [];
+
+  if (config.preSampleFiles?.length) {
+    sections.push({
+      service: `${config.service}_PRE_SAMPLE`,
+      label: "PRE_SAMPLE",
+      kind: "pre_sample",
+      index: 1,
+      files: config.preSampleFiles,
+    });
+  }
+
+  sections.push({
+    service: `${config.service}_IN_SAMPLE`,
+    label: "IN_SAMPLE",
+    kind: "in_sample",
+    index: 1,
+    files: config.inSampleFiles ?? [],
+  });
+
+  if (config.outOfSampleFiles?.length) {
+    sections.push(
+      ...buildOutOfSampleSections(
+        config.service,
+        config.outOfSampleFiles,
+        config.outOfSampleWindowSize ?? 1,
+        config.outOfSampleOverlap ?? 0,
+      ),
+    );
+  }
+
+  return sections;
+}
+
+function buildOutOfSampleSections(
+  service: HistoricalBaseStreamService,
+  files: string[],
+  windowSize: number,
+  overlap: number,
+): HistoricalReplaySection[] {
+  const sections: HistoricalReplaySection[] = [];
+  const step = windowSize - overlap;
+
+  for (
+    let startIndex = 0, sectionIndex = 1;
+    startIndex < files.length;
+    startIndex += step, sectionIndex += 1
+  ) {
+    const windowFiles = files.slice(startIndex, startIndex + windowSize);
+    if (windowFiles.length === 0) continue;
+
+    sections.push({
+      service: `${service}_OO_SAMPLE_${sectionIndex}`,
+      label: `OO_SAMPLE_${sectionIndex}`,
+      kind: "out_of_sample",
+      index: sectionIndex,
+      files: windowFiles,
+    });
+
+    if (startIndex + windowSize >= files.length) {
+      break;
+    }
+  }
+
+  return sections;
+}
+
 export {
   detectFormat as detectHistoricalReplayFormat,
+  HistoricalBaseStreamServiceSchema,
   HistoricalReplayConfigSchema,
   HistoricalReplayFormatSchema,
 };

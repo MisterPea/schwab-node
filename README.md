@@ -617,8 +617,22 @@ void listen(subscriber, (topic, message) => {
 });
 
 await replay.replayFile({
-  filePath: "test/historicalData/synthetic-bars-1m-vendor.csv",
   service: "HISTORICAL_CHART_EQUITY",
+  inSampleFiles: [
+    "/absolute/path/to/2025-01-02.jsonl",
+    "/absolute/path/to/2025-01-03.jsonl",
+  ],
+  preSampleFiles: [
+    "/absolute/path/to/2024-12-30.jsonl",
+    "/absolute/path/to/2024-12-31.jsonl",
+  ],
+  outOfSampleFiles: [
+    "/absolute/path/to/2025-01-06.jsonl",
+    "/absolute/path/to/2025-01-07.jsonl",
+    "/absolute/path/to/2025-01-08.jsonl",
+  ],
+  outOfSampleWindowSize: 2,
+  outOfSampleOverlap: 1,
   pace: "burst",
 });
 ```
@@ -627,14 +641,24 @@ Replay config:
 
 | Field | Description | Default |
 | --- | --- | --- |
-| `filePath` | Path to a historical `.jsonl` or `.csv` file | Required |
-| `service` | Historical service name to publish | `HISTORICAL_CHART_EQUITY` |
+| `service` | Base historical service name to publish from | `HISTORICAL_CHART_EQUITY` |
+| `inSampleFiles` | Absolute historical file paths for the required in-sample section | Required in split mode |
+| `preSampleFiles` | Absolute file paths for the optional pre-sample warmup section | None |
+| `outOfSampleFiles` | Absolute file paths for optional out-of-sample cascading windows | None |
+| `outOfSampleWindowSize` | File count per out-of-sample window | Required when `outOfSampleFiles` is set |
+| `outOfSampleOverlap` | File overlap count between out-of-sample windows | Required when `outOfSampleFiles` is set |
+| `filePath` | Legacy path to one historical `.jsonl` or `.csv` file | Optional legacy mode |
 | `symbol` | Fallback symbol when rows do not include one | None |
 | `format` | Explicit source format override | Auto-detected from extension |
 | `pace` | `burst` or `timed` replay | `burst` |
 | `speed` | Replay speed multiplier for timed mode | `1` |
 
 Current source handling:
+- Split mode accepts absolute file paths from a file picker and replays them in the exact order provided.
+- `inSampleFiles` publishes to `<service>_IN_SAMPLE`.
+- `preSampleFiles` publishes to `<service>_PRE_SAMPLE` when provided.
+- `outOfSampleFiles` publishes overlapping cascades to services like `<service>_OO_SAMPLE_1`, `<service>_OO_SAMPLE_2`, and adds payload metadata including `baseService`, `sectionLabel`, `sectionIndex`, and `sectionKind`.
+- Legacy `filePath` mode is still supported for one-file replay and cannot be combined with split replay fields.
 - `.jsonl` expects one OHLCV record per line with fields such as `open`, `high`, `low`, `close`, `volume`, and `datetime`.
 - `.csv` supports the included vendor-style test fixture shape with `ts_event` nanosecond timestamps and scaled integer OHLC values.
 - Symbol resolution uses row symbol first, then the explicit `symbol` config, then filename inference.
@@ -646,7 +670,7 @@ Example published message:
   "type": "data",
   "receivedAt": 1743177600000,
   "payload": {
-    "service": "HISTORICAL_CHART_EQUITY",
+    "service": "HISTORICAL_CHART_EQUITY_IN_SAMPLE",
     "command": "REPLAY",
     "content": [
       {
@@ -659,8 +683,12 @@ Example published message:
         "chartTime": 1802000000000
       }
     ],
-    "source": "synthetic-bars-1m-vendor.csv",
-    "replayMode": "burst"
+    "source": "2025-01-02.jsonl,2025-01-03.jsonl",
+    "replayMode": "burst",
+    "baseService": "HISTORICAL_CHART_EQUITY",
+    "sectionLabel": "IN_SAMPLE",
+    "sectionIndex": 1,
+    "sectionKind": "in_sample"
   }
 }
 ```

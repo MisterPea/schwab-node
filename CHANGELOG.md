@@ -18,6 +18,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - None yet.
 
+## [0.5.0] - 2026-03-31
+
+### Added
+
+- Added split-based historical replay inputs for file-picker workflows via `inSampleFiles`, optional `preSampleFiles`, and optional `outOfSampleFiles`.
+- Added overlapping out-of-sample cascade support through `outOfSampleWindowSize` and `outOfSampleOverlap`.
+- Added split replay payload metadata including `baseService`, `sectionLabel`, `sectionIndex`, and `sectionKind`.
+- Added tests covering split replay ordering, overlapping out-of-sample windows, missing-file validation, unsupported extensions, and timed split pacing.
+
+### Changed
+
+- `HistoricalReplayStreamer` now publishes split sections on derived services such as `HISTORICAL_CHART_EQUITY_IN_SAMPLE`, `HISTORICAL_CHART_EQUITY_PRE_SAMPLE`, and `HISTORICAL_CHART_EQUITY_OO_SAMPLE_1`.
+- Expanded the README with the new file-picker replay flow and split replay configuration details.
+
+### Deprecated
+
+- Deprecated `filePath` as the preferred historical replay input in favor of the split-based file array API for new integrations, while keeping legacy single-file replay supported.
+
 ## [0.4.1] - 2026-03-30
 
 ### Added

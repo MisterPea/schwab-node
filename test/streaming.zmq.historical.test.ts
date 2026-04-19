@@ -254,6 +254,42 @@ describe("HistoricalReplayStreamer", () => {
     expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 500);
   });
 
+  test("can pause, resume, and replay the previous config", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "historical-pause-"));
+    const first = await createHistoricalFile(tempDir, "in-1.jsonl", 1_000);
+    const second = await createHistoricalFile(tempDir, "in-2.jsonl", 2_000);
+    const { HistoricalReplayStreamer } = await loadHistoricalModule();
+    const streamer = new HistoricalReplayStreamer();
+
+    mockPublish.mockImplementationOnce(async () => {
+      streamer.pause();
+    });
+
+    const replayPromise = streamer.replayFile({
+      service: "HISTORICAL_CHART_EQUITY",
+      inSampleFiles: [first, second],
+    });
+
+    await vi.waitFor(() => {
+      expect(streamer.isPaused).toBe(true);
+      expect(mockPublish).toHaveBeenCalledTimes(1);
+    });
+
+    streamer.resume();
+    await replayPromise;
+
+    expect(streamer.isPaused).toBe(false);
+    expect(mockPublish).toHaveBeenCalledTimes(2);
+
+    mockPublish.mockClear();
+    await streamer.replay();
+
+    expect(mockPublish).toHaveBeenCalledTimes(2);
+    expect(mockPublish.mock.calls[0]?.[1]).toBe(
+      "schwab.data.HISTORICAL_CHART_EQUITY_IN_SAMPLE",
+    );
+  });
+
   test("publishes in-sample files on the split-specific service", async () => {
     const tempDir = await mkdtemp(path.join(os.tmpdir(), "historical-split-"));
     const first = await createHistoricalFile(tempDir, "in-1.jsonl", 1_000);

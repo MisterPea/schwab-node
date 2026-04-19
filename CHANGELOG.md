@@ -18,6 +18,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - None yet.
 
+## [0.5.1] - 2026-04-18
+
+### Added
+
+- Added `HistoricalReplayStreamer` replay controls via `pause()`, `resume()`, `isPaused`, and `replay()`.
+
+### Changed
+
+- Expanded the README with replay control usage for pausing, resuming, and repeating the most recent replay.
+
+### Deprecated
+
+- None yet.
+
 ## [0.5.0] - 2026-03-31
 
 ### Added

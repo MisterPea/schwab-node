@@ -352,6 +352,10 @@ export class HistoricalReplayStreamer {
   private publisher: Publisher | null = null;
   private readonly publisherAddress: string;
   private readonly topicPrefix: string;
+  private _paused = false;
+  private _pauseGate: Promise<void> | null = null;
+  private _pauseResolve: (() => void) | null = null;
+  private _lastConfig: HistoricalReplayConfig | null = null;
 
   /**
    * Creates a historical replay publisher with optional address and topic overrides.
@@ -362,6 +366,42 @@ export class HistoricalReplayStreamer {
     this.publisherAddress =
       options.publisherAddress ?? DEFAULT_PUBLISHER_ADDRESS;
     this.topicPrefix = options.topicPrefix ?? DEFAULT_TOPIC_PREFIX;
+  }
+
+  get isPaused(): boolean {
+    return this._paused;
+  }
+
+  pause(): void {
+    if (this._paused) return;
+
+    this._paused = true;
+    this._pauseGate = new Promise((resolve) => {
+      this._pauseResolve = resolve;
+    });
+  }
+
+  resume(): void {
+    if (!this._paused) return;
+
+    this._paused = false;
+    this._pauseResolve?.();
+    this._pauseResolve = null;
+    this._pauseGate = null;
+  }
+
+  async replay(): Promise<void> {
+    if (!this._lastConfig) {
+      throw new Error("No prior replay to repeat — call replayFile() first");
+    }
+
+    return this.replayFile(this._lastConfig);
+  }
+
+  private async waitIfPaused(): Promise<void> {
+    if (this._pauseGate) {
+      await this._pauseGate;
+    }
   }
 
   /**
@@ -397,6 +437,7 @@ export class HistoricalReplayStreamer {
    */
   async replayFile(rawConfig: HistoricalReplayConfig): Promise<void> {
     const config = HistoricalReplayConfigSchema.parse(rawConfig);
+    this._lastConfig = rawConfig;
     await this.connect();
 
     const sock = this.publisher;
@@ -454,6 +495,8 @@ export class HistoricalReplayStreamer {
     const speed = options.speed ?? 1;
 
     for (const [index, record] of records.entries()) {
+      await this.waitIfPaused();
+
       if (options.pace === "timed" && index > 0) {
         const prior = records[index - 1];
         const deltaMs = Math.max(0, record.chartTime - prior.chartTime);

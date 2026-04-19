@@ -637,6 +637,23 @@ await replay.replayFile({
 });
 ```
 
+Replay controls:
+
+```typescript
+await replay.replayFile({
+  service: "HISTORICAL_CHART_EQUITY",
+  filePath: "/absolute/path/to/2025-01-02.jsonl",
+  pace: "timed",
+  speed: 4,
+});
+
+replay.pause();
+console.log(replay.isPaused); // true
+
+replay.resume();
+await replay.replay(); // repeats the most recent replay config
+```
+
 Replay config:
 
 | Field | Description | Default |
@@ -653,6 +670,15 @@ Replay config:
 | `pace` | `burst` or `timed` replay | `burst` |
 | `speed` | Replay speed multiplier for timed mode | `1` |
 
+Replay control API:
+
+| Member | Description |
+| --- | --- |
+| `pause()` | Pauses replay before the next record is published |
+| `resume()` | Resumes a paused replay |
+| `isPaused` | Indicates whether the replay is currently paused |
+| `replay()` | Re-runs the most recent successful `replayFile()` config |
+
 Current source handling:
 - Split mode accepts absolute file paths from a file picker and replays them in the exact order provided.
 - `inSampleFiles` publishes to `<service>_IN_SAMPLE`.
@@ -662,6 +688,7 @@ Current source handling:
 - `.jsonl` expects one OHLCV record per line with fields such as `open`, `high`, `low`, `close`, `volume`, and `datetime`.
 - `.csv` supports the included vendor-style test fixture shape with `ts_event` nanosecond timestamps and scaled integer OHLC values.
 - Symbol resolution uses row symbol first, then the explicit `symbol` config, then filename inference.
+- `replay()` throws if no prior `replayFile()` call has completed configuration parsing yet.
 
 Example published message:
 

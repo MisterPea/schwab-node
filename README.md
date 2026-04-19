@@ -663,6 +663,42 @@ Current source handling:
 - `.csv` supports the included vendor-style test fixture shape with `ts_event` nanosecond timestamps and scaled integer OHLC values.
 - Symbol resolution uses row symbol first, then the explicit `symbol` config, then filename inference.
 
+### Playback controls
+
+`HistoricalReplayStreamer` exposes methods for pausing, resuming, and repeating a replay after it has started.
+
+| Member | Description |
+| --- | --- |
+| `pause()` | Suspends playback. The current record finishes publishing and the streamer waits at the next record boundary. Safe to call when already paused. |
+| `resume()` | Resumes a paused replay from where it stopped. Safe to call when not paused. |
+| `isPaused` | `true` when playback is suspended, `false` otherwise. |
+| `replay()` | Re-runs the most recent `replayFile()` call from the beginning using the same config. Throws if called before any replay has been initiated. |
+
+```typescript
+const replay = new HistoricalReplayStreamer();
+
+await replay.replayFile({
+  filePath: "/absolute/path/to/bars.jsonl",
+  service: "HISTORICAL_CHART_EQUITY",
+  pace: "timed",
+  speed: 2,
+});
+
+// Pause mid-stream
+replay.pause();
+console.log(replay.isPaused); // true
+
+// Resume from where it stopped
+replay.resume();
+
+// Re-run the same file with the same config
+await replay.replay();
+```
+
+Notes:
+- `pause()` takes effect between records, not mid-publish. In `timed` mode the current inter-bar sleep completes before the streamer actually waits.
+- `replay()` passes the original raw config back to `replayFile()`, so validation and symbol resolution run again on re-entry.
+
 Example published message:
 
 ```json

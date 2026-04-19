@@ -18,6 +18,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - None yet.
 
+## [0.5.1] - 2026-04-18
+
+### Added
+
+- Added `pause()` and `resume()` methods to `HistoricalReplayStreamer` for suspending and resuming timed or burst playback between records.
+- Added `isPaused` getter to `HistoricalReplayStreamer` for inspecting pause state.
+- Added `replay()` method to `HistoricalReplayStreamer` for re-running the most recent `replayFile()` call from the beginning.
+- Added tests covering pause/resume state transitions, gate blocking behavior, replay precondition enforcement, and replay config reuse.
+
 ## [0.5.0] - 2026-03-31
 
 ### Added

@@ -430,4 +430,76 @@ describe("HistoricalReplayStreamer", () => {
       }),
     ).rejects.toThrow("Unsupported historical file format");
   });
+
+  test("pause sets isPaused and resume clears it; idempotent calls are safe", async () => {
+    const { HistoricalReplayStreamer } = await loadHistoricalModule();
+    const streamer = new HistoricalReplayStreamer();
+
+    expect(streamer.isPaused).toBe(false);
+
+    streamer.pause();
+    expect(streamer.isPaused).toBe(true);
+
+    streamer.pause();
+    expect(streamer.isPaused).toBe(true);
+
+    streamer.resume();
+    expect(streamer.isPaused).toBe(false);
+
+    streamer.resume();
+    expect(streamer.isPaused).toBe(false);
+  });
+
+  test("pause blocks publishing until resumed", async () => {
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "historical-pause-"));
+    const filePath = path.join(tempDir, "pause-test.jsonl");
+    await writeFile(
+      filePath,
+      [
+        JSON.stringify({ symbol: "SPY", open: 100, high: 101, low: 99, close: 100.5, volume: 10, datetime: 1_000 }),
+        JSON.stringify({ symbol: "SPY", open: 101, high: 102, low: 100, close: 101.5, volume: 15, datetime: 2_000 }),
+      ].join("\n"),
+    );
+
+    const { HistoricalReplayStreamer } = await loadHistoricalModule();
+    const streamer = new HistoricalReplayStreamer();
+
+    streamer.pause();
+    const replayPromise = streamer.replayFile({
+      filePath,
+      service: "HISTORICAL_CHART_EQUITY",
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(mockPublish).not.toHaveBeenCalled();
+
+    streamer.resume();
+    await replayPromise;
+
+    expect(mockPublish).toHaveBeenCalledTimes(2);
+  });
+
+  test("replay throws if no prior replayFile call was made", async () => {
+    const { HistoricalReplayStreamer } = await loadHistoricalModule();
+    const streamer = new HistoricalReplayStreamer();
+
+    await expect(streamer.replay()).rejects.toThrow("No prior replay");
+  });
+
+  test("replay re-runs replayFile with the last config", async () => {
+    const { HistoricalReplayStreamer } = await loadHistoricalModule();
+    const streamer = new HistoricalReplayStreamer();
+
+    await streamer.replayFile({
+      filePath: path.join(FIXTURES_DIR, "synthetic-bars-1m-vendor.csv"),
+      service: "HISTORICAL_CHART_EQUITY",
+    });
+
+    const firstRunCount = mockPublish.mock.calls.length;
+    expect(firstRunCount).toBeGreaterThan(0);
+
+    await streamer.replay();
+
+    expect(mockPublish).toHaveBeenCalledTimes(firstRunCount * 2);
+  });
 });

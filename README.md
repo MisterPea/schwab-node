@@ -912,6 +912,28 @@ configureDefaultAuth({
 
 Existing users who do not set `tokenMode` are unaffected — default behavior is `"managed"`.
 
+### Persistent Auth Daemon
+
+Managing the daemon yourself is optional. If you need a ready-made daemon that handles the full token lifecycle — initial login, scheduled refresh, 7-day re-auth, and keychain persistence — use the companion package:
+
+```bash
+npm install @misterpea/schwab-node-persistent-auth
+```
+
+Run it once on your machine (or as a system service). Every other service then reads from the keychain in delegated mode, with zero auth configuration of its own:
+
+```typescript
+import { createDelegatedAuth } from "@misterpea/schwab-node";
+import { KeychainTokenStore } from "@misterpea/schwab-node-persistent-auth";
+
+const auth = createDelegatedAuth(new KeychainTokenStore("schwab-node"));
+const token = await auth.getAuth();
+```
+
+The daemon writes to the keychain via `keytar`, which maps to the native secret store on macOS, Windows, and Linux. As long as the daemon is running, all delegated instances stay current without any additional setup.
+
+See the [schwab-node-persistent-auth README](https://github.com/MisterPea/schwab-node-persistent-auth) for daemon setup and configuration.
+
 ## Import Paths
 
 The package root is the recommended import path for most users.

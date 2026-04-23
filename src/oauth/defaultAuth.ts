@@ -3,6 +3,7 @@ import {
   type PathOptions,
   type SchwabAuthConfig,
   type TokenStore,
+  type TokenMode,
 } from "./schwabAuth.js";
 
 type CreateAuthFromEnvOptions = {
@@ -61,4 +62,15 @@ export function getDefaultAuth(): SchwabAuth {
   return defaultAuthInstance;
 }
 
-export type { CreateAuthFromEnvOptions };
+/**
+ * Creates an auth instance that delegates all token management to an external daemon.
+ * The provided store is read-only from this instance's perspective — no refresh or re-auth will occur.
+ *
+ * @param {TokenStore} tokenStore Store backed by the daemon's token source (e.g. keychain).
+ * @returns {SchwabAuth} Auth instance in delegated mode.
+ */
+export function createDelegatedAuth(tokenStore: TokenStore): SchwabAuth {
+  return new SchwabAuth({ tokenMode: "delegated", tokenStore });
+}
+
+export type { CreateAuthFromEnvOptions, TokenMode };

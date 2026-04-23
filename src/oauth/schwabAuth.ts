@@ -13,6 +13,8 @@ export type SecretProvider = {
   getRedirectUri?: () => Promise<string | undefined> | string | undefined;
 };
 
+export type TokenMode = "managed" | "delegated";
+
 export type SchwabAuthConfig = {
   clientId?: string;
   clientSecret?: string;
@@ -20,6 +22,7 @@ export type SchwabAuthConfig = {
   tokenStore?: TokenStore;
   paths?: PathOptions;
   secrets?: SecretProvider;
+  tokenMode?: TokenMode;
 };
 
 type ResolvedCredentials = {
@@ -106,6 +109,13 @@ export class SchwabAuth {
    * @returns {Promise<TokenSet>} Current token payload.
    */
   private async getAuthInternal(): Promise<TokenSet> {
+    if (this.config.tokenMode === "delegated") {
+      const token = await this.tokenStore.load();
+      if (!token) throw new Error("Delegated mode: no token found. Is the daemon running?");
+      if (this.isExpired(token)) throw new Error("Delegated mode: token expired. Daemon may be down.");
+      return token;
+    }
+
     let token: TokenSet | null = await this.tokenStore.load();
 
     if (!token) {

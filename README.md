@@ -138,10 +138,10 @@ The main README focuses on the subscription surface. Transport details and field
 
 ### Explicit auth
 
-Use `SchwabAuth` when you want direct control over token lifecycle instead of relying on default `.env` loading.
+Use `SchwabAuth` when you want direct control over token lifecycle instead of relying on default `.env` loading. Use `createDelegatedAuth` when an external daemon owns token management and your app only needs to read the current token.
 
 ```typescript
-import { SchwabAuth } from "@misterpea/schwab-node";
+import { SchwabAuth, createDelegatedAuth } from "@misterpea/schwab-node";
 ```
 
 ## Request API
@@ -871,6 +871,47 @@ Token shape:
 }
 ```
 
+### Delegated Mode
+
+Use delegated mode when a separate daemon process owns token acquisition and refresh, and your app should only read the current token without attempting any OAuth flow of its own.
+
+Schwab allows one active OAuth session per account. If multiple services each tried to manage auth independently they would conflict. The daemon pattern solves this: one process handles all token work; every other service reads from a shared token store in delegated mode.
+
+```typescript
+import { createDelegatedAuth } from "@misterpea/schwab-node";
+import { MyKeychainStore } from "./my-keychain-store"; // implements TokenStore
+
+const auth = createDelegatedAuth(new MyKeychainStore("schwab-node"));
+const token = await auth.getAuth();
+```
+
+In delegated mode `getAuth()` reads the token from the provided store and returns it as-is. It throws if no token is found or the token is expired — no refresh, no browser prompt. The daemon is responsible for keeping the token valid.
+
+```
+Daemon  → manages OAuth, refresh, 7-day re-auth → writes to keychain
+App     → createDelegatedAuth(keychainStore)     → reads from keychain
+```
+
+Error behavior when daemon is unavailable:
+
+```
+Error: Delegated mode: no token found. Is the daemon running?
+Error: Delegated mode: token expired. Daemon may be down.
+```
+
+You can also set `tokenMode` directly on `SchwabAuth` or `configureDefaultAuth`:
+
+```typescript
+import { configureDefaultAuth } from "@misterpea/schwab-node";
+
+configureDefaultAuth({
+  tokenMode: "delegated",
+  tokenStore: new MyKeychainStore("schwab-node"),
+});
+```
+
+Existing users who do not set `tokenMode` are unaffected — default behavior is `"managed"`.
+
 ## Import Paths
 
 The package root is the recommended import path for most users.
@@ -883,6 +924,7 @@ import {
   getAccounts,
   SchwabAuth,
   SchwabStreamer,
+  createDelegatedAuth,
 } from "@misterpea/schwab-node";
 ```
 

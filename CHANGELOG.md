@@ -18,6 +18,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - None yet.
 
+## [0.6.0] - 2026-04-22
+
+### Added
+
+- Added `tokenMode` config option (`"managed"` | `"delegated"`) to `SchwabAuthConfig`. Default is `"managed"` — existing behavior unchanged.
+- Added `createDelegatedAuth(tokenStore)` factory for apps that delegate all OAuth and refresh work to an external daemon.
+- Added `TokenMode` type export.
+
+### Changed
+
+- `getAuth()` in delegated mode reads from the provided store and throws on missing or expired token instead of attempting refresh or re-auth.
+
 ## [0.5.1] - 2026-04-18
 
 ### Added

@@ -96,6 +96,75 @@ describe("SchwabAuth", () => {
     expect(store.clear).toHaveBeenCalledTimes(1);
   });
 
+  describe("delegated mode", () => {
+    function makeStore(token: object) {
+      return { load: vi.fn().mockResolvedValue(token), save: vi.fn(), clear: vi.fn() };
+    }
+
+    function liveToken(overrides?: object) {
+      return {
+        access_token: "delegated-token",
+        token_type: "Bearer",
+        expires_in: 1800,
+        obtained_at: Date.now(),
+        refresh_token: "r",
+        refresh_obtained_at: Date.now(),
+        scope: "api",
+        ...overrides,
+      };
+    }
+
+    test("reads token from store and returns it", async () => {
+      const store = makeStore(liveToken());
+      const auth = new SchwabAuth({ tokenMode: "delegated", tokenStore: store });
+
+      const token = await auth.getAuth();
+
+      expect(token.access_token).toBe("delegated-token");
+      expect(store.load).toHaveBeenCalledTimes(1);
+    });
+
+    test("caches token in memory so second getAuth call skips the store", async () => {
+      const store = makeStore(liveToken());
+      const auth = new SchwabAuth({ tokenMode: "delegated", tokenStore: store });
+
+      await auth.getAuth();
+      await auth.getAuth();
+
+      expect(store.load).toHaveBeenCalledTimes(1);
+    });
+
+    test("re-reads store when cached token is expired", async () => {
+      const expired = liveToken({ obtained_at: Date.now() - 2_000_000 });
+      const fresh = liveToken();
+      const store = makeStore(expired);
+      store.load.mockResolvedValueOnce(expired).mockResolvedValue(fresh);
+
+      const auth = new SchwabAuth({ tokenMode: "delegated", tokenStore: store });
+
+      await expect(auth.getAuth()).rejects.toThrow("token expired");
+    });
+
+    test("clearAuth clears in-memory cache so next getAuth re-reads store", async () => {
+      const store = makeStore(liveToken());
+      const auth = new SchwabAuth({ tokenMode: "delegated", tokenStore: store });
+
+      await auth.getAuth();
+      await auth.clearAuth();
+      await auth.getAuth();
+
+      expect(store.load).toHaveBeenCalledTimes(2);
+      expect(store.clear).toHaveBeenCalledTimes(1);
+    });
+
+    test("throws when no token in store", async () => {
+      const store = makeStore(null);
+      const auth = new SchwabAuth({ tokenMode: "delegated", tokenStore: store });
+
+      await expect(auth.getAuth()).rejects.toThrow("no token found");
+    });
+  });
+
   test("reads credentials from an overridden env path", async () => {
     const dir = await makeTempDir();
     const envDir = join(dir, "config");

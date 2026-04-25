@@ -63,6 +63,7 @@ export class SchwabAuth {
   private refreshSkew: number = 2 * 60_000;
   private authInProgress: Promise<TokenSet> | null = null;
   private credentialsPromise: Promise<ResolvedCredentials> | null = null;
+  private cachedDelegatedToken: TokenSet | null = null;
 
   constructor(config: SchwabAuthConfig = {}) {
     this.config = config;
@@ -91,6 +92,7 @@ export class SchwabAuth {
    * @returns {Promise<void>} Resolves when the token has been cleared.
    */
   async clearAuth(): Promise<void> {
+    this.cachedDelegatedToken = null;
     await this.tokenStore.clear?.();
   }
 
@@ -110,9 +112,13 @@ export class SchwabAuth {
    */
   private async getAuthInternal(): Promise<TokenSet> {
     if (this.config.tokenMode === "delegated") {
+      if (this.cachedDelegatedToken && !this.isExpired(this.cachedDelegatedToken)) {
+        return this.cachedDelegatedToken;
+      }
       const token = await this.tokenStore.load();
       if (!token) throw new Error("Delegated mode: no token found. Is the daemon running?");
       if (this.isExpired(token)) throw new Error("Delegated mode: token expired. Daemon may be down.");
+      this.cachedDelegatedToken = token;
       return token;
     }
 

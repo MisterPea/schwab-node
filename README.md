@@ -1008,3 +1008,9 @@ AI tooling (OpenAI Codex) was used as a development assistant for:
 - Assisting with test development and validation
 
 All core architecture, implementation, and final code decisions were written and reviewed by the project author.
+
+---
+
+## Disclaimer
+
+This library interacts with the Schwab brokerage API. It is not financial advice and carries no liability for financial losses, missed trades, API errors, or authentication interruptions. See [DISCLAIMER.md](DISCLAIMER.md) for full details.

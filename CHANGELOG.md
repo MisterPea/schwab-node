@@ -18,6 +18,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - None yet.
 
+## [0.6.1] - 2026-04-25
+
+### Added
+
+- In-memory token cache for delegated mode (`cachedDelegatedToken`). Repeated `getAuth()` calls return the cached token without hitting the store until it expires.
+- `clearAuth()` now also clears the in-memory delegated token cache.
+- Tests for delegated mode: cache hit, cache bypass on expiry, cache reset after `clearAuth`, missing token, and basic store read.
+
+### Changed
+
+- README: added disclaimer section linking to `DISCLAIMER.md`.
+
 ## [0.6.0] - 2026-04-22
 
 ### Added

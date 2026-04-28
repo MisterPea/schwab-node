@@ -18,6 +18,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - None yet.
 
+## [0.6.2] - 2026-04-28
+
+### Security
+
+- Bumped transitive dependency `postcss` to 8.5.12 (via `vite`) to address CVE-2026-41305. PostCSS ≤8.5.5 did not escape `</style>` sequences when stringifying CSS ASTs, enabling XSS when user-submitted CSS was embedded in HTML `<style>` tags. This package does not process user CSS directly, but the fix is included as a precaution.
+
 ## [0.6.1] - 2026-04-25
 
 ### Added

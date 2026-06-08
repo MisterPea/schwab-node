@@ -1,6 +1,6 @@
 {
   "name": "@misterpea/schwab-node",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "license": "MIT",
   "author": "Perry Angelora <perry.angelora@gmail.com>",
   "repository": {
@@ -130,25 +130,13 @@
       "types": "./dist/derivatives/greek-filter/index.d.ts",
       "import": "./dist/derivatives/greek-filter/index.js"
     },
+    "./derivatives/gamma-tools": {
+      "types": "./dist/derivatives/gamma-tools/index.d.ts",
+      "import": "./dist/derivatives/gamma-tools/index.js"
+    },
     "./derivatives/schema": {
       "types": "./dist/derivatives/schema.d.ts",
       "import": "./dist/derivatives/schema.js"
-    },
-    "./marketData/quotes": {
-      "types": "./dist/marketData/quotes.d.ts",
-      "import": "./dist/marketData/quotes.js"
-    },
-    "./marketData/derivatives": {
-      "types": "./dist/marketData/derivatives.d.ts",
-      "import": "./dist/marketData/derivatives.js"
-    },
-    "./marketData/highLevelData": {
-      "types": "./dist/marketData/highLevelData.d.ts",
-      "import": "./dist/marketData/highLevelData.js"
-    },
-    "./marketData/request": {
-      "types": "./dist/marketData/request.d.ts",
-      "import": "./dist/marketData/request.js"
     },
     "./streaming/zmq": {
       "types": "./dist/streaming/zmq/index.d.ts",

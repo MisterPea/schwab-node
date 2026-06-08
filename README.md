@@ -93,6 +93,7 @@ import {
   getOptionExpirations,
   getAtmOptionData,
   greekFilter,
+  getGammaExposure,
   getAccounts,
   getAccountNumbers,
   getUserPreference,
@@ -109,6 +110,7 @@ import {
 | `getOptionExpirations(config)` | Available expirations for a symbol | `Promise<OptionExpirationReturn \| undefined>` |
 | `getAtmOptionData(config)` | Near-the-money options in an inclusive DTE window | `Promise<GetAtmOptionReturn \| undefined>` |
 | `greekFilter(config)` | Options filtered by DTE and Greek ranges | `Promise<GreekFilterReturn>` |
+| `getGammaExposure(symbol, startDte, endDte)` | Per-strike gamma exposure (GEX) for all calls and puts in a DTE window | `Promise<GammaExposureReturn>` |
 | `getAccounts()` | Account info including balances and buying power | `Promise<AccountsResponse>` |
 | `getAccountNumbers()` | Account numbers and their encrypted values | `Promise<UserAccountNumbers>` |
 | `getUserPreference()` | Account and streamer metadata | `Promise<UserPreferenceResponse>` |
@@ -417,6 +419,56 @@ Example response shape:
   },
 ]
 ```
+
+### `getGammaExposure()`
+
+Returns per-strike gamma exposure (GEX) for every call and put in a DTE window. GEX values use the dealer-hedging sign convention: calls are positive, puts are negative. `impliedVolatility` is returned as a decimal (e.g. `0.20` not `20`).
+
+```typescript
+import { getGammaExposure } from "@misterpea/schwab-node";
+
+const gexData = await getGammaExposure("AAPL", 0, 30);
+```
+
+Example response shape:
+
+```typescript
+[
+  {
+    underlyingSymbol: "AAPL",
+    underlyingPrice: 180.15,
+    strike: 180,
+    distanceFromSpot: -0.15,
+    distanceFromSpotPct: -0.0008,
+    moneynessType: "NTM",
+    optionType: "CALL",
+    bid: 3.6,
+    ask: 3.75,
+    mark: 3.675,
+    last: 3.65,
+    dte: 3,
+    dteBucket: "1-7DTE",
+    delta: 0.5,
+    gamma: 0.1,
+    signedStrikeGEX: 3245402.25,
+    perContractGEX: 3245.4,
+    impliedVolatility: 0.2,
+    openInterest: 1000,
+    multiplier: 100,
+    expiration: "2026-02-20",
+  },
+]
+```
+
+Field notes:
+
+| Field | Description |
+| --- | --- |
+| `signedStrikeGEX` | `gamma × multiplier × underlyingPrice × (underlyingPrice × 0.01) × openInterest × sign` — positive for calls, negative for puts |
+| `perContractGEX` | `gamma × multiplier × underlyingPrice² × 0.01` — unsigned, per-contract basis |
+| `dteBucket` | `"0DTE"` / `"1-7DTE"` / `"8-30DTE"` / `"31-90DTE"` / `"90DTE+"` |
+| `moneynessType` | `"NTM"` (distance 0–1) / `"ITM"` (distance ≥ 1) / `"OTM"` (distance < 0) |
+| `impliedVolatility` | Decimal fraction (Schwab's percent value divided by 100) |
 
 ## Account API
 
@@ -943,6 +995,7 @@ import {
   getQuote,
   getPriceHistory,
   getOptionChain,
+  getGammaExposure,
   getAccounts,
   SchwabAuth,
   SchwabStreamer,
@@ -957,33 +1010,13 @@ Use subpaths when you want a namespace boundary in your imports:
 
 ```typescript
 import { getQuote, getPriceHistory } from "@misterpea/schwab-node/market-data";
-import { getOptionChain, greekFilter } from "@misterpea/schwab-node/derivatives";
+import { getOptionChain, greekFilter, getGammaExposure } from "@misterpea/schwab-node/derivatives";
 import { getAccounts } from "@misterpea/schwab-node/account";
 import { SchwabAuth } from "@misterpea/schwab-node/oauth/schwabAuth";
 import { resolveSchwabPaths } from "@misterpea/schwab-node/oauth/paths";
 import { EncryptedFileTokenStore } from "@misterpea/schwab-node/oauth/tokenStore";
 import { createSubscriber, listen } from "@misterpea/schwab-node/streaming/zmq";
 ```
-</details>
-
-<details>
-<summary>Legacy import routes</summary>
-
-The package now uses kebab-case namespace paths such as `market-data`.
-
-Legacy import routes still resolve for compatibility, but they emit a one-time `DeprecationWarning` telling callers which path to move to.
-
-| Legacy import | Use instead |
-| --- | --- |
-| `@misterpea/schwab-node/marketData/quotes` | `@misterpea/schwab-node/market-data` |
-| `@misterpea/schwab-node/marketData/highLevelData` | `@misterpea/schwab-node/market-data` |
-| `@misterpea/schwab-node/marketData/derivatives` | `@misterpea/schwab-node/derivatives` |
-| `@misterpea/schwab-node/marketData/request` | `@misterpea/schwab-node/scripts/request` |
-
-Compatibility notes:
-- `marketData/quotes` keeps the old array-wrapped quote and price-history envelope.
-- `marketData/highLevelData` keeps the old movers envelope of `{ screeners: [...] }[]`.
-- `marketData/derivatives` keeps the old array-wrapped option-chain shape and maps ATM output back to `day_of_week`.
 </details>
 
 ## Feedback & Requests

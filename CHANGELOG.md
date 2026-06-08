@@ -18,6 +18,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - None yet.
 
+## [0.7.0] - 2026-06-08
+
+### Added
+
+- `getGammaExposure(symbol, startDte, endDte)` — returns per-strike gamma exposure data for stocks and ETFs. Each element includes signed strike GEX, per-contract GEX, moneyness bucket (`NTM`/`ITM`/`OTM`), DTE bucket, delta, IV, and other option fields. Exported from `@misterpea/schwab-node/derivatives` and `@misterpea/schwab-node/derivatives/gamma-tools`.
+
+### Removed
+
+- **Breaking:** Legacy import paths `@misterpea/schwab-node/marketData/quotes`, `/marketData/derivatives`, `/marketData/highLevelData`, and `/marketData/request` have been removed. Use `@misterpea/schwab-node/market-data` and `@misterpea/schwab-node/derivatives` instead.
+- **Breaking:** Legacy types removed from the main export: `AtmOptionRtn`, `ChartBase`, `ChartRequest`, `GetAtmOptionReq` (use the one from `./derivatives/get-atm-option-data`), `GetOptionChainRtn`, `GetQuoteReq`, `GreekFilterReq`, `GreekFilterRtn`, `OptionChainReq`, `OptionExpirationReq`, `OptionExpirationRtn`, `PriceHistoryRtnElement`, `QuoteData`, `QuoteRtn`, `ScreenersResponseItem`, and all legacy frequency/period types (`ChartRequest`, `DayPeriod`, `MinuteFrequency`, etc.). Use the Zod-inferred types exported from each module's schema instead.
+- `GetMarketDataConfig` in `@misterpea/schwab-node/types_internal` now reflects the current schema types rather than the removed legacy types.
+
+### Security
+
+- Bumped transitive dependency `ws` to 8.20.1 to address GHSA-58qx-3vcg-4xpx (CVE-2026-45736). `ws` ≤8.20.0 could disclose uninitialized memory when a `TypedArray` was passed as the reason argument to `websocket.close()`. This package does not call `close()` with a TypedArray reason directly, but the fix is included as a precaution.
+- Bumped transitive dependency `qs` to 6.15.2 to address GHSA-q8mj-m7cp-5q26 (CVE-2026-8723). `qs` ≥6.11.1 and <6.15.2 could crash with a TypeError in `qs.stringify` when `arrayFormat: 'comma'` and `encodeValuesOnly: true` were set on an array containing null or undefined entries, enabling a remotely triggerable DoS via JSON request bodies.
+
 ## [0.6.2] - 2026-04-28
 
 ### Security

@@ -66,3 +66,35 @@ describe("derivatives contract", () => {
     expect(result[0].expirationDate).toBe("2026-02-20");
   });
 });
+
+describe("OptionReturn spread field", () => {
+  test("accepts null bidAskSpreadPct (zero-bid strikes) and rejects Infinity", async () => {
+    const { OptionReturnSchema } = await import(
+      "../src/derivatives/get-atm-option-data/schema.js"
+    );
+    const base = {
+      put_call: "PUT",
+      day_of_expiry: "FRI",
+      underlying: "AAPL",
+      bid: 0,
+      ask: 0.05,
+      open_interest: 12,
+      total_volume: 0,
+      symbol: "AAPL  260821P00150000",
+      dte: 42,
+      theta: -0.001,
+      strike_price: 150,
+      gamma: 0.0001,
+      volatility: 55.2,
+      vega: 0.002,
+      delta: -0.01,
+      rho: 0,
+    };
+    expect(() =>
+      OptionReturnSchema.parse({ ...base, bidAskSpreadPct: null }),
+    ).not.toThrow();
+    expect(() =>
+      OptionReturnSchema.parse({ ...base, bidAskSpreadPct: Infinity }),
+    ).toThrow();
+  });
+});

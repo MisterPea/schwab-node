@@ -84,6 +84,40 @@ export const ProjectedBalancesSchema = z.object({
   stockBuyingPower: Num,
 });
 
+export const PositionInstrumentSchema = z.object({
+  assetType: z.string(), // EQUITY | OPTION | COLLECTIVE_INVESTMENT | ... — free-form to survive unseen types
+  cusip: z.string().optional(),
+  symbol: z.string(),
+  description: z.string().optional(),
+  netChange: Num.optional(),
+  type: z.string().optional(),
+  putCall: z.string().optional(), // OPTION only
+  underlyingSymbol: z.string().optional(), // OPTION only
+});
+
+export const PositionSchema = z.object({
+  shortQuantity: Num,
+  longQuantity: Num,
+  settledLongQuantity: Num.optional(),
+  settledShortQuantity: Num.optional(),
+  agedQuantity: Num.optional(),
+  averagePrice: Num.optional(),
+  averageLongPrice: Num.optional(),
+  averageShortPrice: Num.optional(),
+  taxLotAverageLongPrice: Num.optional(),
+  taxLotAverageShortPrice: Num.optional(),
+  marketValue: Num,
+  maintenanceRequirement: Num.optional(),
+  currentDayProfitLoss: Num.optional(),
+  currentDayProfitLossPercentage: Num.optional(),
+  currentDayCost: Num.optional(),
+  longOpenProfitLoss: Num.optional(),
+  shortOpenProfitLoss: Num.optional(),
+  previousSessionLongQuantity: Num.optional(),
+  previousSessionShortQuantity: Num.optional(),
+  instrument: PositionInstrumentSchema,
+});
+
 export const SecuritiesAccountSchema = z.object({
   type: AccountTypeSchema,
   accountNumber: z.string(),
@@ -91,6 +125,7 @@ export const SecuritiesAccountSchema = z.object({
   isDayTrader: Bool,
   isClosingOnlyRestricted: Bool,
   pfcbFlag: Bool,
+  positions: z.array(PositionSchema).optional(), // present only with ?fields=positions
   initialBalances: InitialBalancesSchema,
   currentBalances: CurrentBalancesSchema,
   projectedBalances: ProjectedBalancesSchema,
@@ -108,3 +143,11 @@ export const AccountResponseItemSchema = z.object({
 
 export const AccountsResponseSchema = z.array(AccountResponseItemSchema);
 export type AccountsResponse = z.infer<typeof AccountsResponseSchema>;
+export type Position = z.infer<typeof PositionSchema>;
+
+export const GetAccountsRequestSchema = z
+  .object({
+    fields: z.enum(["positions"]).optional(),
+  })
+  .optional();
+export type GetAccountsRequest = z.infer<typeof GetAccountsRequestSchema>;

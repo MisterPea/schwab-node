@@ -103,7 +103,8 @@ export async function greekFilter(
         underlying: symbol,
         bid: strike.bid,
         ask: strike.ask,
-        bidAskSpreadPct: ((strike.ask - strike.bid) / strike.bid) * 100,
+        bidAskSpreadPct:
+          strike.bid > 0 ? ((strike.ask - strike.bid) / strike.bid) * 100 : null,
         symbol: strike.symbol,
         dte: strike.daysToExpiration,
         total_volume: strike.totalVolume,

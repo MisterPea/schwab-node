@@ -18,6 +18,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - None yet.
 
+## [0.7.1] - 2026-07-10
+
+### Added
+
+- `getAccounts(config?)` now accepts an optional `{ fields: "positions" }` request so callers can fetch account positions from the Schwab `/accounts` endpoint.
+- Added account position schemas and exported `GetAccountsRequest` and `Position` types so equity and option holdings can be parsed from account responses.
+- Added contract coverage for accounts responses with and without positions, plus zero-bid option spread validation.
+
+### Changed
+
+- `getAccounts()` now validates the optional request config and preserves backward compatibility when account responses omit `positions`.
+- `bidAskSpreadPct` in option-return payloads is now `null` when the bid is `0` instead of producing an invalid infinite percentage in `getAtmOptionData()` and `greekFilter()`.
+
 ## [0.7.0] - 2026-06-08
 
 ### Added

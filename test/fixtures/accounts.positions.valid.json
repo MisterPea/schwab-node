@@ -1,0 +1,119 @@
+[
+  {
+    "securitiesAccount": {
+      "type": "MARGIN",
+      "accountNumber": "12345678",
+      "roundTrips": 0,
+      "isDayTrader": false,
+      "isClosingOnlyRestricted": false,
+      "pfcbFlag": false,
+      "positions": [
+        {
+          "shortQuantity": 0,
+          "longQuantity": 300,
+          "averagePrice": 172.51,
+          "marketValue": 76500,
+          "currentDayProfitLoss": 120.5,
+          "currentDayProfitLossPercentage": 0.16,
+          "instrument": {
+            "assetType": "EQUITY",
+            "cusip": "037833100",
+            "symbol": "AAPL"
+          }
+        },
+        {
+          "shortQuantity": 1,
+          "longQuantity": 0,
+          "averagePrice": 2.65,
+          "marketValue": -265,
+          "instrument": {
+            "assetType": "OPTION",
+            "symbol": "AAPL  260918C00290000",
+            "putCall": "CALL",
+            "underlyingSymbol": "AAPL",
+            "description": "AAPL Sep 18 2026 290 Call"
+          }
+        }
+      ],
+      "initialBalances": {
+        "accruedInterest": 0,
+        "availableFundsNonMarginableTrade": 0,
+        "bondValue": 0,
+        "buyingPower": 0,
+        "cashBalance": 0,
+        "cashAvailableForTrading": 0,
+        "cashReceipts": 0,
+        "dayTradingBuyingPower": 0,
+        "dayTradingBuyingPowerCall": 0,
+        "dayTradingEquityCall": 0,
+        "equity": 0,
+        "equityPercentage": 0,
+        "liquidationValue": 0,
+        "longMarginValue": 0,
+        "longOptionMarketValue": 0,
+        "longStockValue": 0,
+        "maintenanceCall": 0,
+        "maintenanceRequirement": 0,
+        "margin": 0,
+        "marginEquity": 0,
+        "moneyMarketFund": 0,
+        "mutualFundValue": 0,
+        "regTCall": 0,
+        "shortMarginValue": 0,
+        "shortOptionMarketValue": 0,
+        "shortStockValue": 0,
+        "totalCash": 0,
+        "pendingDeposits": 0,
+        "marginBalance": 0,
+        "shortBalance": 0,
+        "accountValue": 0,
+        "isInCall": false
+      },
+      "currentBalances": {
+        "accruedInterest": 0,
+        "cashBalance": 0,
+        "cashReceipts": 0,
+        "longOptionMarketValue": 0,
+        "liquidationValue": 0,
+        "longMarketValue": 0,
+        "moneyMarketFund": 0,
+        "savings": 0,
+        "shortMarketValue": 0,
+        "pendingDeposits": 0,
+        "mutualFundValue": 0,
+        "bondValue": 0,
+        "shortOptionMarketValue": 0,
+        "availableFunds": 0,
+        "availableFundsNonMarginableTrade": 0,
+        "buyingPower": 0,
+        "buyingPowerNonMarginableTrade": 0,
+        "dayTradingBuyingPower": 0,
+        "equity": 0,
+        "equityPercentage": 0,
+        "longMarginValue": 0,
+        "maintenanceCall": 0,
+        "maintenanceRequirement": 0,
+        "marginBalance": 0,
+        "regTCall": 0,
+        "shortBalance": 0,
+        "shortMarginValue": 0,
+        "sma": 0
+      },
+      "projectedBalances": {
+        "availableFunds": 0,
+        "availableFundsNonMarginableTrade": 0,
+        "buyingPower": 0,
+        "dayTradingBuyingPower": 0,
+        "dayTradingBuyingPowerCall": 0,
+        "maintenanceCall": 0,
+        "regTCall": 0,
+        "stockBuyingPower": 0,
+        "isInCall": false
+      }
+    },
+    "aggregatedBalance": {
+      "currentLiquidationValue": 100000,
+      "liquidationValue": 100000
+    }
+  }
+]

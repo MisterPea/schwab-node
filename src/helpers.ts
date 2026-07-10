@@ -64,7 +64,7 @@ export function constructMarketDataUrl(
  * @returns {string} Endpoint with queries
  */
 export function constructTraderDataUrl(
-  config: GetMarketDataConfig | null,
+  config: GetMarketDataConfig | Record<string, string | number | boolean> | null,
   endpoint: string,
 ): string {
   const url = new URL(`${TRADER_DATA_ROOT}${endpoint}`);

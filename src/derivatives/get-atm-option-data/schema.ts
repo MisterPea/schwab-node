@@ -16,7 +16,7 @@ export const OptionReturnSchema = z.object({
   underlying: z.string(),
   bid: z.number(),
   ask: z.number(),
-  bidAskSpreadPct: z.number(),
+  bidAskSpreadPct: z.number().nullable(), // null when bid is 0 — (ask-bid)/bid undefined
   open_interest: z.number(),
   total_volume: z.number(),
   symbol: z.string(),

@@ -100,7 +100,7 @@ export async function getAtmOptionData(
         underlying: optionDeliverablesList[0].symbol || "",
         bid,
         ask,
-        bidAskSpreadPct: ((ask - bid) / bid) * 100,
+        bidAskSpreadPct: bid > 0 ? ((ask - bid) / bid) * 100 : null,
         open_interest: openInterest,
         total_volume: totalVolume,
         symbol,

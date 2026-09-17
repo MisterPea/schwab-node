@@ -18,6 +18,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - None yet.
 
+## [0.7.2] - 2026-09-16
+
+### Security
+
+- Bumped transitive dependency `qs` to 6.16.0 (via `express`/`body-parser`) to address GHSA-x5fp-wj9c-mxmx (array-limit bypass via bracket-key comma parsing) and GHSA-4mjr-xmp4-gh2g (denial of service via attacker-controlled `isBuffer`).
+- Bumped transitive dependency `body-parser` to 2.3.0 (via `express`) to address GHSA-v422-hmwv-36x6, a denial of service where an invalid `limit` value silently disabled request size enforcement.
+- Bumped transitive dev dependency `nanoid` to 3.3.19 (via `vite`) to address GHSA-28wg-ghj8-5hjv and GHSA-2v37-7h3g-55p8, indefinite loops when a non-secure or custom generator is called with a negative or zero size. Build/test tooling only; not reachable from published package code.
+- Bumped transitive dev dependency `postcss` to 8.5.28 (via `vite`) to address GHSA-fxqj-rqcc-2cmp and GHSA-r28c-9q8g-f849, path traversal via `sourceMappingURL` auto-loading that could disclose arbitrary `.map` files. Build/test tooling only; not reachable from published package code.
+- Bumped `vitest` and `@vitest/coverage-v8` to 4.1.11 to address GHSA-82fw-gwwq-j7x9 in `@vitest/mocker`, a path traversal / arbitrary file read via redirect mock. Test tooling only; not reachable from published package code.
+
 ## [0.7.1] - 2026-07-10
 
 ### Added

@@ -1,6 +1,6 @@
 {
   "name": "@misterpea/schwab-node",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "license": "MIT",
   "author": "Perry Angelora <perry.angelora@gmail.com>",
   "repository": {
@@ -164,10 +164,10 @@
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.0",
     "@types/ws": "^8.18.1",
-    "@vitest/coverage-v8": "^4.0.15",
+    "@vitest/coverage-v8": "^4.1.11",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.15"
+    "vitest": "^4.1.11"
   },
   "dependencies": {
     "@biomejs/biome": "^2.4.4",

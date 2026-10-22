@@ -18,6 +18,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - None yet.
 
+## [0.7.4] - 2026-10-22
+
+### Security
+
+- Bumped transitive dev dependency `vite` to 8.3.5 (via `vitest`) to address GHSA-9jrq-w75r-8gcw (cross-origin script execution through custom middleware), GHSA-rq7h-c2jc-7f22 (files outside `server.fs.allow` served when project paths match system paths), GHSA-vfpm-58rq-9qcg (first 4 bytes of files outside `server.fs` exposed via `?vite-wasm-instance`), and `launch-editor` advisories GHSA-698v-4r3x-3vcv, GHSA-r825-w8mm-5pxw, and GHSA-587h-7wmj-h5pm. Build/test tooling only; not reachable from published package code.
+- Bumped `vitest` and `@vitest/coverage-v8` to 4.1.12 to address GHSA-qxg6-89mg-rqv8 (code injection via unauthenticated manual mock registration) and GHSA-xp26-3454-mjgp (Windows backslash traversal bypassing the redirect allowlist) in `@vitest/mocker`. Test tooling only; not reachable from published package code.
+
 ## [0.7.2] - 2026-09-16
 
 ### Security
